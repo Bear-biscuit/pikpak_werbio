@@ -20,11 +20,13 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 
 
 ### 添加邮箱页面
+https://example.com/bulk_add  
 可以手动添加邮箱信息，也可以从下方邮箱卡购买网站中购买邮箱卡，注意是邮箱卡，不要买成邮箱  
 把你的key填入后进行更新，输入数量后获取账号，可以自动添加到右方文本框中  
 ![image](https://github.com/user-attachments/assets/ea7c6b0d-10f3-450e-8921-448108f4ddcb)
 
 ### 会员共享页面
+https://example.com/public_email  
 只会显示近三天邀请成功的账号  
 ![image](https://github.com/user-attachments/assets/a3fc3c51-cc96-4917-9a9c-ddcec9478553)
 
