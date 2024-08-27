@@ -177,7 +177,7 @@ def recent_emails():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
-    emails = read_emails()  # 假设这是读取邮件数据的函数
+    emails = read_emails() 
     now = datetime.datetime.now()
     three_days_ago = now - datetime.timedelta(days=3)
     
