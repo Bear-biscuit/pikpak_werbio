@@ -1,30 +1,3 @@
-# # 项目说明
-#
-# ## pikpak会员自动邀请程序1.2，python编写
-# ## 原作者：B站纸鸢的花语
-# ## 二改作者：非雨
-# GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxianlu/pikpak_werbio)
-#
-# ## 已知问题
-# 运行两个小时后会出现`add_days`异常失败，部署在宝塔面板的可设置为定时重启项目即可解决！
-#
-# ## 声明
-# 纸鸢花的花语所提供的任何资源或素材代码，仅供学习交流和技术分析，严禁用于任何商业牟利行为（包括但不限于引流用户加入社群，利用免费学习素材牟利贩卖，冒充原作者盗用引流增加用户数等）。
-# 出现任何后果自行承担，与资源的分享者没有任何关系和责任，如出现违反规定侵权行为，原作者有权对违规者进行版权控诉处理。
-#
-# ## 如何运行
-# 1. 下载`werbio_v1.2.py`文件到本地用 Python 运行。
-# 2. 运行后提示什么错误就安装什么库，例如: `pip install requests`。
-# 3. 将file_path = r'C:\Users\admin\小米云盘\桌面\邮箱.txt'# 自己修改代码中txt替换为自己实际的邮箱文件地址。将card_keys代码中卡密及使用次数修改为自己喜欢的卡密
-# 4. 运行成功后复制网址到浏览器打开，输入邀请码 例：123456 卡密 例：0727-0827-3382SJ2SJ 即可运行在网页执行邀请程序，可搭建部署在服务器运行。
-#
-# ## 更新内容
-# v1.2
-#     1.去除3个API短效邮箱接口，改为自动读取txt中的微软邮箱 账号----密码
-#
-# v1.1
-#     1. 增加3个API邮箱接口（将接口卡密1，2，3替换为实际购买的邮箱卡密）
-#     2. 增加卡密验证（可自定义卡密及使用次数 有卡密的用户才能执行邀请程序） 、可直接部署在网页运行
 
 
 import poplib
@@ -47,12 +20,13 @@ from datetime import datetime
 
 # -------------改这里-------------
 # r'替换为自己txt文件所在地址'
-file_path = r'C:\Users\admin\小米云盘\桌面\邮箱.txt'
+file_path = r'./email.txt'
 
 # 定义卡密和其使用次数
 card_keys = {
-    "0727-0827-3382SJ2SJ": 10000,
-    "替换为自己想要的卡密": 10
+    "private": 1000000,
+    "public": 100,
+    "可添加多个": 10
 }
 # --------------------------------
 
@@ -84,14 +58,14 @@ def read_and_process_file(file_path):
         return None, None
 
 # 更新文件
-def update_file_status(file_path, email, password, status):
+def update_file_status(file_path, email, password, status, time):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
         with open(file_path, 'w', encoding='utf-8') as file:
             for line in lines:
                 if line.strip().startswith(email) and "----" in line:
-                    file.write(f"{line.strip()} {status}\n")
+                    file.write(f"{line.strip()} {status} {time}\n")
                 else:
                     file.write(line)
     except Exception as e:
@@ -468,7 +442,7 @@ def signup(xid, mail, code, verification_token):
         "verification_code": code,
         "verification_token": verification_token,
         'name': f'qihang{random.randint(1, 1000000000)}vip',
-        "password": "qwe103",
+        "password": "pik031020",
         "client_id": "YvtoWO6GNHiuCl7x"
     }
     headers = {
@@ -771,7 +745,7 @@ def main(incode, num_invitations=5):
             email_users, email_passes = read_and_process_file(file_path)
 
             if not email_users or not email_passes:
-                return "未能读取邮箱或密码"
+                return "暂无可用邮箱"
 
             for email_user, email_pass in zip(email_users, email_passes):
                 mail = email_user
@@ -803,22 +777,30 @@ def main(incode, num_invitations=5):
 
                 # 检查邀请是否成功
                 if activation.get('add_days') == 5:
-                    result = f"邀请成功 邀请码: {incode} email: {mail} 密码：qwe103"
+                    result = f"邀请成功 邀请码: {incode} email: {mail} 密码：pik031020"
                     print(result)
                     success_count += 1
+                    # 邀请时间限制
                     invitation_records[incode].append(time.time())
-                    # 更新文件中的邮箱和密码状态
-                    update_file_status(file_path , email_user, email_pass, "登录成功")
-                    return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: qwe103"
+                    # 获取当前时间
+                    current_timestamp = time.time()
+                    # 更新文件中的邮箱和密码状态 添加时间
+                    update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
+                    return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik031020"
                 elif activation.get('add_days') == 0:
-                    result = f'邀请码: {incode} 邀请失败, 重试...'
+                    result = f'邀请码: {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
                     print(result)
-                    update_file_status(r'C:\Users\admin\小米云盘\桌面\邮箱.txt', email_user, email_pass, "失败")
+                    # 新增逻辑
+                    success_count += 1
+                    current_timestamp = time.time()
+                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                     return result
                 else:
                     result = f"未知情况: {activation}"
                     print(result)
-                    update_file_status(r'C:\Users\admin\小米云盘\桌面\邮箱.txt', email_user, email_pass, "失败")
+
+                    current_timestamp = ''
+                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                     return result
 
         except Exception as e:
@@ -956,4 +938,4 @@ def web_app():
 
 
 if __name__ == '__main__':
-    start_server(web_app, host='0.0.0.0', port=8081)
+    start_server(web_app, host='0.0.0.0', port=8848)
