@@ -39,11 +39,14 @@ https://example.com/public_email
 只要删除选中的这两行即可  
 ![image](https://github.com/user-attachments/assets/253f1364-595c-4d00-8561-095da1587e0a)
 
-
 ### 邮箱接口
 邮箱卡购买地址:
 - [https://shanyouxiang.com/](https://shanyouxiang.com/)
 
-
-
+## 运行
+### Linux
+推荐使用screen命令  
+```
+screen -S pik
+```
 
