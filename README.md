@@ -11,8 +11,6 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 ### 邮箱接口
 邮箱卡购买地址:
 - [https://shanyouxiang.com/](https://shanyouxiang.com/)
-- [https://zhanghaoya.com/](https://zhanghaoya.com/)
-- [https://atufn.com/](https://atufn.com/)
 
 
 
