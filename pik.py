@@ -442,7 +442,7 @@ def signup(xid, mail, code, verification_token):
         "verification_code": code,
         "verification_token": verification_token,
         'name': f'qihang{random.randint(1, 1000000000)}vip',
-        "password": "pik031020",
+        "password": "pik123",
         "client_id": "YvtoWO6GNHiuCl7x"
     }
     headers = {
@@ -777,7 +777,7 @@ def main(incode, num_invitations=5):
 
                 # 检查邀请是否成功
                 if activation.get('add_days') == 5:
-                    result = f"邀请成功 邀请码: {incode} email: {mail} 密码：pik031020"
+                    result = f"邀请成功 邀请码: {incode} email: {mail} 密码：pik123"
                     print(result)
                     success_count += 1
                     # 邀请时间限制
@@ -786,7 +786,7 @@ def main(incode, num_invitations=5):
                     current_timestamp = time.time()
                     # 更新文件中的邮箱和密码状态 添加时间
                     update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
-                    return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik031020"
+                    return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123"
                 elif activation.get('add_days') == 0:
                     result = f'邀请码: {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
                     print(result)
