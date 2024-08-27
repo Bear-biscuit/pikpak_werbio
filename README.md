@@ -33,6 +33,7 @@ https://example.com/bulk_add
 ### 会员共享页面
 https://example.com/public_email  
 只会显示近三天邀请成功的账号  
+注意渲染时的密码是固定的，请确保与会员邀请程序中的密码一致
 ![image](https://github.com/user-attachments/assets/a3fc3c51-cc96-4917-9a9c-ddcec9478553)
 
 ### 是否公开
@@ -44,6 +45,10 @@ https://example.com/public_email
 ### 邮箱接口
 邮箱卡购买地址:
 - [https://shanyouxiang.com/](https://shanyouxiang.com/)
+
+## 代码详情
+pik.py 为会员邀请程序 
+app.py 为邮箱文本管理程序
 
 ## 运行
 安装依赖 
