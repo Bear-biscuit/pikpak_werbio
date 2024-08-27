@@ -43,10 +43,3 @@ https://example.com/public_email
 邮箱卡购买地址:
 - [https://shanyouxiang.com/](https://shanyouxiang.com/)
 
-## 运行
-### Linux
-推荐使用screen命令  
-```
-screen -S pik
-```
-
