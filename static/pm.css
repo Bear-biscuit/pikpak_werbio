@@ -1,0 +1,129 @@
+/* 基础设置 */
+html {
+    font-size: 16px; /* 设定基础字体大小 */
+}
+
+/* 全局样式 */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    font-size: 4vw; /* 基于 375px 设计的字体大小 */
+}
+
+h1 {
+    text-align: center;
+    font-size: 7vw; /* 调整标题大小 */
+    margin: 5vw 0;
+    color: #333;
+}
+
+/* 闪存消息样式 */
+div[class*='message'] {
+    margin: 3vw auto;
+    padding: 3vw;
+    border-radius: 1.5vw;
+    text-align: center;
+    font-size: 4vw;
+}
+
+div.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+div.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* 批量添加链接样式 */
+.bulk-add-link {
+    text-align: center;
+    margin-bottom: 5vw;
+}
+
+.bulk-add-link a {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 4.5vw;
+}
+
+/* 按钮样式 */
+button.toggle-button {
+    display: block;
+    margin: 4vw auto;
+    padding: 2.5vw 5vw;
+    font-size: 4.5vw;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 1.5vw;
+    cursor: pointer;
+}
+
+button.toggle-button:hover {
+    background-color: #0056b3;
+}
+
+/* 表格样式 */
+table {
+    width: 95vw; /* 使用 vw 调整表格宽度 */
+    margin: 4vw auto;
+    border-collapse: collapse;
+    font-size: 4vw; /* 表格内字体大小 */
+    table-layout: fixed; /* 固定表格布局以避免内容撑开 */
+}
+
+th, td {
+    border: 0.2vw solid #ddd;
+    padding: 2vw;
+    text-align: center;
+    word-wrap: break-word; /* 防止长单词超出表格 */
+}
+
+th {
+    background-color: #f2f2f2;
+    font-size: 4.5vw; /* 表头字体稍大 */
+    width: 25%;
+}
+th:last-child {
+    width: 50%;
+}
+td {
+    background-color: white;
+}
+
+/* 表单样式 */
+form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2vw; /* 表单控件之间的间距 */
+    width: 100%; /* 确保表单宽度不超出屏幕 */
+    margin-bottom: 1vw;
+}
+
+input[type="text"] {
+    width: 100%; /* 输入框的宽度适应屏幕 */
+    padding: 0.4vw;
+    font-size: 3vw;
+    border: 0.2vw solid #ccc;
+    border-radius: 1.5vw;
+    box-sizing: border-box; /* 包含内边距和边框在宽度计算中 */
+}
+
+button[type="submit"] {
+    padding: 1vw 1vw;
+    font-size: 3vw;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 1.5vw;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #218838;
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pc.css') }}" media="screen and (min-width: 501px)">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pm.css') }}" media="screen and (max-width: 500px)">
+
+</head>
+
+<body>
+    <h1>邮箱管理</h1>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Link to bulk add page -->
+    <div class="bulk-add-link">
+        <a href="{{ url_for('bulk_add') }}">批量添加账号</a>
+        <br>
+        <a href="{{ url_for('logout') }}">退出登录</a>
+    </div>
+
+    <!-- Toggle button to switch between views -->
+    <button id="toggle-button" class="toggle-button" onclick="toggleAccounts()">显示已登录账号</button>
+
+    <!-- Table for non-logged-in accounts -->
+    <table id="non-logged-in-accounts">
+        <tr>
+            <th>Email</th>
+            <th>Password</th>
+            <th>Actions</th>
+        </tr>
+        {% for email in emails %}
+        {% if '登录成功' not in email and '失败' not in email %}
+        <tr>
+            {% set email_parts = email.split('----') %}
+            <td>{{ email_parts[0] }}</td>
+            <td>{{ email_parts[1] if email_parts|length > 1 else '' }}</td>
+            <td>
+                <form action="{{ url_for('update_email', index=loop.index0) }}" method="post">
+                    <input type="text" name="new_email" placeholder="New Email" value="{{ email_parts[0] }}" required>
+                    <input type="text" name="new_password" placeholder="New Password"
+                        value="{{ email_parts[1] if email_parts|length > 1 else '' }}" required>
+                    <button type="submit">更新</button>
+                </form>
+                <form action="{{ url_for('delete_email', index=loop.index0) }}" method="get">
+                    <button type="submit">删除</button>
+                </form>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+
+    <!-- Table for logged-in accounts -->
+    <table id="logged-in-accounts" style="display: none;">
+        <tr>
+            <th>Email</th>
+            <th>Password</th>
+            <th>Actions</th>
+        </tr>
+        {% for email in emails %}
+        {% if '登录成功' in email %}
+        <tr>
+            {% set email_parts = email.split('----') %}
+            <td>{{ email_parts[0] }}</td>
+            <td>{{ email_parts[1] if email_parts|length > 1 else '' }}</td>
+            <td>
+                <form action="{{ url_for('update_email', index=loop.index0) }}" method="post">
+                    <input type="text" name="new_email" placeholder="New Email" value="{{ email_parts[0] }}" required>
+                    <input type="text" name="new_password" placeholder="New Password"
+                        value="{{ email_parts[1] if email_parts|length > 1 else '' }}" required>
+                    <button type="submit">Update</button>
+                </form>
+                <form action="{{ url_for('delete_email', index=loop.index0) }}" method="get">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+    <table id="err-logged-in-accounts" style="display: none;">
+        <tr>
+            <th>Email</th>
+            <th>Password</th>
+            <th>Actions</th>
+        </tr>
+        {% for email in emails %}
+        {% if '失败' in email %}
+        <tr>
+            {% set email_parts = email.split('----') %}
+            <td>{{ email_parts[0] }}</td>
+            <td>{{ email_parts[1] if email_parts|length > 1 else '' }}</td>
+            <td>
+                <form action="{{ url_for('update_email', index=loop.index0) }}" method="post">
+                    <input type="text" name="new_email" placeholder="New Email" value="{{ email_parts[0] }}" required>
+                    <input type="text" name="new_password" placeholder="New Password"
+                        value="{{ email_parts[1] if email_parts|length > 1 else '' }}" required>
+                    <button type="submit">Update</button>
+                </form>
+                <form action="{{ url_for('delete_email', index=loop.index0) }}" method="get">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+    <script>
+        function toggleAccounts() {
+            var nonLoggedInTable = document.getElementById('non-logged-in-accounts');
+            var loggedInTable1 = document.getElementById('logged-in-accounts');
+            var loggedInTable2 = document.getElementById('err-logged-in-accounts');
+            var toggleButton = document.getElementById('toggle-button');
+
+            if (nonLoggedInTable.style.display === 'none') {
+                nonLoggedInTable.style.display = 'table';
+                loggedInTable1.style.display = 'none';
+                loggedInTable2.style.display = 'none';
+                toggleButton.textContent = '显示登录成功账号';
+            } else {
+                nonLoggedInTable.style.display = 'none';
+                loggedInTable1.style.display = 'table';
+                loggedInTable2.style.display = 'table';
+                toggleButton.textContent = '显示未登录账号';
+            }
+        }
+    </script>
+</body>
+
+</html>

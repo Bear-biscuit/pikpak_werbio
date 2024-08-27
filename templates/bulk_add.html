@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量添加账户</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bulk_add.css') }}">
+
+    <script>
+        function validateInput() {
+            var bulkInput = document.querySelector('textarea[name="bulk_input"]').value.trim();
+            var lines = bulkInput.split('\n');
+            var isValid = true;
+            const btn = document.querySelector('#star')
+
+
+            // 验证每行是否符合 '账号----密码' 格式
+            for (var i = 0; i < lines.length; i++) {
+                var parts = lines[i].split('----');
+
+                // 检查是否有且仅有一个 '----' 且两部分都不为空
+                if (parts.length !== 2 || parts[0].trim() === '' || parts[1].trim() === '') {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid) {
+                alert('输入格式错误：请确保每行都以 "账号----密码" 的格式输入，并且两部分都不能为空。');
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+
+<body>
+    <div class="box">
+        <div class="add_email">
+            <!-- 显示 hotmail 和 outlook 数量 -->
+            <div class="email-counts">
+                <h4>接口邮箱数量</h4>
+                <p>Hotmail : {{ email_counts['hotmail'] }}</p>
+                <p>Outlook : {{ email_counts['outlook'] }}</p>
+            </div>
+            <!-- 输入 card 值的表单 -->
+            <div class="card-input-form">
+                <form method="post">
+                    <label for="card">接口key值:</label>
+                    <input type="text" name="card" id="card" value="{{ session['card'] if 'card' in session else '' }}"
+                        required>
+                    <button type="submit" name="set_card">更新</button>
+                </form>
+            </div>
+            <!-- 显示余额信息 -->
+            <div class="balance-info">
+                <p>余额: {{ balance_info['num'] }}</p>
+            </div>
+
+            <!-- 获取邮箱账号 -->
+            <form id="fetch-emails-form" action="{{ url_for('bulk_add') }}" method="post">
+                <label for="email_type">邮箱类型:</label>
+                <select name="email_type" id="email_type">
+                    <option value="outlook">Outlook</option>
+                    <option value="hotmail">Hotmail</option>
+                </select>
+                <br>
+                <label for="email_quantity">输入数量:</label>
+                <input type="number" name="email_quantity" id="email_quantity" min="1" max="{{ balance_info['num'] }}">
+
+                <button type="submit" name="fetch_emails">获取账号</button>
+            </form>
+
+        </div>
+        <div class="bulk-add-container">
+            <h1>批量添加账户</h1>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="message">
+                {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="count">
+                剩余未登录账号数量: {{ non_logged_in_count }}
+            </div>
+            <!-- 手动输入账户 -->
+            <form id="manual-input-form" action="{{ url_for('bulk_add') }}" method="post"
+                onsubmit="return validateInput()">
+                <!-- 这里使用 Jinja2 的模板变量显示获取到的邮箱账号 -->
+                <textarea name="bulk_input" id="bulk_input" placeholder="以‘email----password’格式输入账户,每行一个……"
+                    rows="6">{{ bulk_input }}</textarea>
+                <button type="submit" name="manual_input">开始添加</button>
+            </form>
+
+            <!-- 文件上传方式添加账户 -->
+            <form id="file-upload-form" action="{{ url_for('bulk_add') }}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file_upload" accept=".txt">
+                <button type="submit">上传账户文件</button>
+            </form>
+
+            <!-- 返回主页链接 -->
+            <a href="{{ url_for('index') }}">返回</a>
+        </div>
+
+    </div>
+
+
+    <!-- JS 脚本放在这里 -->
+    <script>
+        // 重置表单状态的函数
+        function resetForm(formId) {
+            const form = document.getElementById(formId);
+            form.reset();  // 重置表单所有字段
+        }
+
+        // 监听表单提交事件
+        document.getElementById('fetch-emails-form').addEventListener('submit', function (event) {
+            // 延迟执行重置表单状态
+            setTimeout(function () {
+                resetForm('fetch-emails-form');
+            }, 500);  // 可以根据需要调整延迟时间
+        });
+
+        document.getElementById('manual-input-form').addEventListener('submit', function (event) {
+            setTimeout(function () {
+                document.getElementById('bulk_input').value = '';  // 清空文本框内容
+                resetForm('manual-input-form');
+            }, 500);
+        });
+
+        document.getElementById('file-upload-form').addEventListener('submit', function (event) {
+            setTimeout(function () {
+                resetForm('file-upload-form');
+            }, 500);
+        });
+    </script>
+</body>
+
+
+</html>

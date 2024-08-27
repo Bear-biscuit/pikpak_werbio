@@ -1,0 +1,151 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+.bulk-add-container {
+    width: 80%;
+    max-width: 600px;
+    padding: 20px;
+    margin: 10px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.message {
+    margin-bottom: 20px;
+    color: red;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+input[type="file"] {
+    margin: 10px 0;
+}
+
+a {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #333;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.count {
+    margin-bottom: 20px;
+}
+
+.email-counts,
+.balance-info,
+.fetch-form {
+    margin-bottom: 20px;
+}
+
+.box {
+    display: flex;
+    width: 90vw;
+    /* flex-wrap: wrap; */
+    justify-content: center;
+    margin: 30px auto;
+}
+
+.add_email {
+    width: 200px;
+    min-width: 200px;
+    padding: 20px;
+    margin: 10px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+
+/* 标题样式 */
+.add_email h4 {
+    color: #007bff; /* 标题颜色 */
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+/* 表单组样式 */
+.add_email form {
+    margin-bottom: 15px;
+}
+
+/* 按钮样式 */
+.add_email button {
+    background-color: #007bff; /* 按钮背景色 */
+    color: #ffffff; /* 按钮文字颜色 */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.add_email form input {
+    width: 60px;
+    margin-bottom: 5px;
+}
+
+.btn:hover {
+    background-color: #0056b3; /* 按钮悬停颜色 */
+}
+
+/* 余额信息样式 */
+.balance-info p {
+    font-size: 16px;
+    font-weight: bold;
+    color: #28a745; /* 余额信息颜色 */
+}
+
+@media (width < 530px) {
+    .box {
+        flex-wrap: wrap;
+    }
+
+    .add_email {
+        width: 80%;
+        max-width: 600px;
+    }
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pik共享账号</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='public_email.css') }}">
+</head>
+<body>
+    <h1>共享会员账号</h1>
+
+    <!-- Display recent emails in a table -->
+    <table>
+        <tr>
+            <th>Email</th>
+            <th>Password</th>
+        </tr>
+        {% for email in recent_emails %}
+        <tr>
+            {% set email_parts = email.split('----') %}
+            <td>{{ email_parts[0] }}</td>
+            <td>{{ email_parts[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
