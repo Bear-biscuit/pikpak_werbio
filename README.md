@@ -13,7 +13,6 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 ![image](https://github.com/user-attachments/assets/29f795d0-bc14-48a7-884b-293c2701a613)
 
 
-## 增加邮箱文本的管理页面
 ### 登录页面
 请在app.py的登录页部分，更改账号密码  
 ![image](https://github.com/user-attachments/assets/2f890414-ceea-44f4-b07e-88de4f3c9ef0)
