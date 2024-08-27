@@ -46,7 +46,7 @@ https://example.com/public_email
 - [https://shanyouxiang.com/](https://shanyouxiang.com/)
 
 ## 代码详情
-pik.py 为会员邀请程序 
+pik.py 为会员邀请程序  
 app.py 为邮箱文本管理程序
 
 ## 运行
