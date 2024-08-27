@@ -67,14 +67,17 @@
         <tr>
             <th>Email</th>
             <th>Password</th>
+            <th>Time</th>
             <th>Actions</th>
         </tr>
         {% for email in emails %}
         {% if '登录成功' in email %}
         <tr>
             {% set email_parts = email.split('----') %}
-            <td>{{ email_parts[0] }}</td>
-            <td>{{ email_parts[1] if email_parts|length > 1 else '' }}</td>
+            <td>{{ email_parts[0] }}</td> <!-- 账号部分 -->
+            <td>{{ email_parts[1].split(' ')[0] if email_parts|length > 1 else '' }} <!-- 密码 -->
+                {{ email.split(' ')[1] if email.split(' ')|length > 1 else '' }}</td> <!-- 状态 -->
+            <td data-timestamp="{{ email.split(' ')[-1] }}">{{ email.split(' ')[-1] }}</td> <!-- 时间戳 -->
             <td>
                 <form action="{{ url_for('update_email', index=loop.index0) }}" method="post">
                     <input type="text" name="new_email" placeholder="New Email" value="{{ email_parts[0] }}" required>
@@ -89,19 +92,17 @@
         </tr>
         {% endif %}
         {% endfor %}
-    </table>
-    <table id="err-logged-in-accounts" style="display: none;">
         <tr>
-            <th>Email</th>
-            <th>Password</th>
-            <th>Actions</th>
+            <td colspan="4" style="text-align: center; font-weight: 700;">失败账号</td>
         </tr>
         {% for email in emails %}
         {% if '失败' in email %}
         <tr>
             {% set email_parts = email.split('----') %}
-            <td>{{ email_parts[0] }}</td>
-            <td>{{ email_parts[1] if email_parts|length > 1 else '' }}</td>
+            <td>{{ email_parts[0] }}</td> <!-- 账号部分 -->
+            <td>{{ email_parts[1].split(' ')[0] if email_parts|length > 1 else '' }} <!-- 密码 -->
+                {{ email.split(' ')[1] if email.split(' ')|length > 1 else '' }}</td> <!-- 状态 -->
+            <td data-timestamp="{{ email.split(' ')[-1] }}">{{ email.split(' ')[-1] }}</td> <!-- 时间戳 -->
             <td>
                 <form action="{{ url_for('update_email', index=loop.index0) }}" method="post">
                     <input type="text" name="new_email" placeholder="New Email" value="{{ email_parts[0] }}" required>
@@ -120,22 +121,32 @@
     <script>
         function toggleAccounts() {
             var nonLoggedInTable = document.getElementById('non-logged-in-accounts');
-            var loggedInTable1 = document.getElementById('logged-in-accounts');
-            var loggedInTable2 = document.getElementById('err-logged-in-accounts');
+            var loggedInTable = document.getElementById('logged-in-accounts');
             var toggleButton = document.getElementById('toggle-button');
 
             if (nonLoggedInTable.style.display === 'none') {
                 nonLoggedInTable.style.display = 'table';
-                loggedInTable1.style.display = 'none';
-                loggedInTable2.style.display = 'none';
+                loggedInTable.style.display = 'none';
                 toggleButton.textContent = '显示登录成功账号';
             } else {
                 nonLoggedInTable.style.display = 'none';
-                loggedInTable1.style.display = 'table';
-                loggedInTable2.style.display = 'table';
+                loggedInTable.style.display = 'table';
                 toggleButton.textContent = '显示未登录账号';
             }
         }
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取所有包含时间戳的 <td> 元素
+            const timestampCells = document.querySelectorAll('td[data-timestamp]');
+
+            timestampCells.forEach(cell => {
+                const timestamp = cell.getAttribute('data-timestamp');
+                if (timestamp) {
+                    const date = new Date(timestamp * 1000); // 转换时间戳为毫秒
+                    const formattedDate = date.toLocaleString(); // 将日期格式化为本地时间字符串
+                    cell.innerText = formattedDate; // 替换原有时间戳文本
+                }
+            });
+        });
     </script>
 </body>
 
