@@ -20,7 +20,8 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 ### 邮箱管理页面
 可以查看和管理已使用和未使用的邮箱  
 ![image](https://github.com/user-attachments/assets/3c3eb2ca-1b94-4d38-ac18-9e2afdf304ce)
-![image](https://github.com/user-attachments/assets/4b29e7c9-33c1-4e6f-a973-a6a3612ed2a0)
+![image](https://github.com/user-attachments/assets/275fc323-c96b-496c-899d-dbfeed15653a)
+
 
 
 ### 添加邮箱页面
