@@ -58,9 +58,10 @@ def index():
     return render_template('index.html', emails=emails)
 
 
-# 批量添加 email
+# 批量添加 email 页面
 @app.route('/bulk_add', methods=['GET', 'POST'])
 def bulk_add():
+    # 去掉下面两行，关闭登陆验证
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
@@ -172,27 +173,34 @@ def get_balance(card):
 # 会员账号页面
 @app.route('/public_emails')
 def recent_emails():
+    # 去掉下面两行，关闭登陆验证
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
-    emails = read_emails()
+    emails = read_emails()  # 假设这是读取邮件数据的函数
     now = datetime.datetime.now()
     three_days_ago = now - datetime.timedelta(days=3)
     
     recent_emails = []
+
     for email in emails:
-        parts = email.split(' ')
-        if len(parts) >= 3:
-            timestamp_str = parts[2]
+        # 检查是否包含"登录成功"
+        if '登录成功' in email:
+            parts = email.split(' ')  # 使用空格分隔
             try:
-                # 将 UNIX 时间戳转换为 datetime 对象
-                timestamp = datetime.datetime.fromtimestamp(float(timestamp_str))
+                # 获取时间戳部分并转换为 datetime 对象
+                timestamp = datetime.datetime.fromtimestamp(float(parts[-1]))
+
+                # 检查时间戳是否在最近三天内
                 if timestamp >= three_days_ago:
-                    # 提取账号部分，固定密码
-                    recent_emails.append(f"{parts[0]}----pik031020")
-            except ValueError:
+                    account_info = email.split('----')  # 使用 '----' 分隔账号信息
+                    account = account_info[0]  # 获取邮箱部分
+                    fixed_password = "pik123"  # 固定密码 需要和pik.py中的密码一致
+                    formatted_email = f"{account}----{fixed_password}"
+                    recent_emails.append(formatted_email)
+            except (ValueError, IndexError):
                 continue
-    
+
     return render_template('public_emails.html', recent_emails=recent_emails)
 
 
