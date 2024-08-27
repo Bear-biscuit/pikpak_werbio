@@ -31,7 +31,7 @@
     </div>
 
     <!-- Toggle button to switch between views -->
-    <button id="toggle-button" class="toggle-button" onclick="toggleAccounts()">显示已登录账号</button>
+    <button id="toggle-button" class="toggle-button" onclick="toggleAccounts()">显示已使用账号</button>
 
     <!-- Table for non-logged-in accounts -->
     <table id="non-logged-in-accounts">
@@ -127,11 +127,11 @@
             if (nonLoggedInTable.style.display === 'none') {
                 nonLoggedInTable.style.display = 'table';
                 loggedInTable.style.display = 'none';
-                toggleButton.textContent = '显示登录成功账号';
+                toggleButton.textContent = '显示已使用账号';
             } else {
                 nonLoggedInTable.style.display = 'none';
                 loggedInTable.style.display = 'table';
-                toggleButton.textContent = '显示未登录账号';
+                toggleButton.textContent = '显示未使用账号';
             }
         }
         document.addEventListener('DOMContentLoaded', function () {
