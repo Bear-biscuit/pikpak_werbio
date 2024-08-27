@@ -8,6 +8,9 @@
 ## 二改作者：非雨 
 GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxianlu/pikpak_werbio)
 
+### 注意
+现在邀请新用户后，会有最高24小时的审核期，会员奖励不会立即结算  
+
 ## 增加邮箱文本的管理页面
 ### 登录页面
 请在app.py的登录页部分，更改账号密码  
