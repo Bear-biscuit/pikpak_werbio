@@ -44,5 +44,5 @@ https://example.com/public_email
 - [https://shanyouxiang.com/](https://shanyouxiang.com/)
 
 ## 运行
-使用 pip install -r requirements.txt 安装依赖
+使用 ```pip install -r requirements.txt``` 安装依赖
 分别运行 app.py 和 pik.py  
