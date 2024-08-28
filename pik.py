@@ -793,7 +793,7 @@ def main(incode, num_invitations=5):
                     # 新增逻辑
                     success_count += 1
                     current_timestamp = time.time()
-                    update_file_status(r'./email.txt', email_user, email_pass, "成功(待定)", current_timestamp)
+                    update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
                     return f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123"
                 else:
                     result = f"未知情况: {activation}"
