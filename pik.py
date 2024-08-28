@@ -31,7 +31,7 @@ card_keys = {
 # --------------------------------
 
 
-# 读取文件内容提取邮箱和密码，跳过包含登录成功或失败的行
+# 读取文件内容提取邮箱和密码，跳过包含登录成功或成功(待定)的行
 def read_and_process_file(file_path):
     try:
         email_user_list = []
@@ -41,7 +41,7 @@ def read_and_process_file(file_path):
         updated_lines = []
         for line in lines:
             line = line.strip()
-            if "登录成功" in line or "失败" in line:
+            if "登录成功" in line or "成功(待定)" in line or "失败" in line:
                 continue
             match = re.match(r'^(.+?)----([^\s@]+)$', line)
             if match:
@@ -788,13 +788,13 @@ def main(incode, num_invitations=5):
                     update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
                     return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123"
                 elif activation.get('add_days') == 0:
-                    result = f'邀请码: {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
+                    result = f'邀请成功: {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
                     print(result)
                     # 新增逻辑
                     success_count += 1
                     current_timestamp = time.time()
-                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-                    return result
+                    update_file_status(r'./email.txt', email_user, email_pass, "成功(待定)", current_timestamp)
+                    return f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123"
                 else:
                     result = f"未知情况: {activation}"
                     print(result)
