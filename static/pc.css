@@ -47,21 +47,6 @@ div.error {
     color: #a94442;
 }
 
-/* 批量添加链接 */
-.bulk-add-link {
-    text-align: center;
-    margin: 20px 0;
-}
-
-.bulk-add-link a {
-    text-decoration: none;
-    color: #007bff;
-    font-size: 18px;
-}
-
-.bulk-add-link a:hover {
-    text-decoration: underline;
-}
 
 /* 按钮样式 */
 button.toggle-button {
@@ -138,4 +123,30 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
     background: #218838;
+}
+/* 批量添加链接 */
+.bulk-add-link {
+	display: flex;
+	max-width: 200px;
+	justify-content: center;
+	align-items: center;
+	margin: 10px auto;
+	flex-wrap: wrap;
+}
+.bulk-add-link a {
+  text-decoration: none;
+  display: flex;
+  width: 112px;
+  justify-content: center;
+  align-items: center;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 20px;
+        }
+.bulk-add-link a:hover {
+  background-color: #0056b3;
 }
