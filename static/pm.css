@@ -9,7 +9,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f5f5f5;
-    font-size: 4vw; /* 基于 375px 设计的字体大小 */
+    font-size: 2.5vw; /* 基于 375px 设计的字体大小 */
 }
 
 h1 {
@@ -70,13 +70,14 @@ table {
 th, td {
     border: 0.2vw solid #ddd;
     padding: 2vw;
+    font-size: 2.5vw;
     text-align: center;
     word-wrap: break-word; /* 防止长单词超出表格 */
 }
 
 th {
     background-color: #f2f2f2;
-    font-size: 4.5vw; /* 表头字体稍大 */
+    font-size: 3vw; /* 表头字体稍大 */
     width: 25%;
 }
 th:last-child {
@@ -101,7 +102,7 @@ input[type="text"] {
     padding: 0.4vw;
     font-size: 3vw;
     border: 0.2vw solid #ccc;
-    border-radius: 1.5vw;
+/*    border-radius: 1.5vw;*/
     box-sizing: border-box; /* 包含内边距和边框在宽度计算中 */
 }
 
