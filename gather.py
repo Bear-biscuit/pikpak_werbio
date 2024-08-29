@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pywebio.input import input_group, input, TEXT
 from pywebio.output import put_text, put_markdown, clear, put_html
 from pywebio import start_server
-from datetime import datetime
+# from datetime import datetime
 from pywebio.platform.flask import webio_view
 
 app = Flask(__name__)
@@ -932,7 +932,7 @@ invite_success_limit = 1
 invitation_records = {}
 
 def main(incode, num_invitations=5):
-    now = datetime.now()
+    now = datetime.datetime.now()
     print("当前日期: ", now)
     start_time = time.time()
     success_count = 0
