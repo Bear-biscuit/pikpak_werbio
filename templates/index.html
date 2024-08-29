@@ -14,7 +14,7 @@
 <body>
     <h1>邮箱管理</h1>
 
-    <!-- Flash messages -->
+
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -22,22 +22,22 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-
-    <!-- Link to bulk add page -->
-    <div class="bulk-add-link">
-        <!-- 按需开启 -->
-        <!-- <a href="{{ url_for('logout') }}">退出登录</a> -->
-        <br>
-        <a href="{{ url_for('bulk_add') }}">批量添加账号</a>
-        <br>
-        <!-- 按需开启 -->
-        <!-- <a href="/">邀请页面</a> -->
+<div class="postinon">
+    <div class="box">
+        <div class="list-title">
+                <span><</span>
+                    
+                    <a href="{{ url_for('bulk_add') }}">添加账号</a>
+                    <!-- 按需开启 -->
+                    <a href="/">邀请页面</a>
+                    <!-- 按需开启 -->
+                    <a href="{{ url_for('recent_emails') }}">共享账号</a>
+                    <!-- 按需开启 -->
+                    <a style="margin-top: 1rem;" href="{{ url_for('logout') }}">退出登录</a>
+        </div>
     </div>
-
-    <!-- Toggle button to switch between views -->
     <button id="toggle-button" class="toggle-button" onclick="toggleAccounts()">显示已使用账号</button>
-
-    <!-- Table for non-logged-in accounts -->
+</div>
     <table id="non-logged-in-accounts">
         <tr>
             <th>Email</th>
@@ -151,6 +151,30 @@
                 }
             });
         });
+        const box = document.querySelector('.box')
+        const list = document.querySelector('.list-title')
+        const span = document.querySelector('.list-title span')
+        box.style.height = `${list.offsetHeight}px`
+
+
+        document.documentElement.addEventListener('click', (e) => {
+            if (e.target.tagName === 'SPAN') {
+                if (list.style.animationName === 'on') {
+                    list.style.animationName = 'off'
+                    span.innerHTML = '<'
+                }
+                else {
+                    list.style.animationName = 'on'
+                    span.innerHTML = '>'
+                }
+            }
+            else {
+                if (list.style.animationName === 'on') {
+                    list.style.animationName = 'off'
+                    span.innerHTML = '<'
+                }
+            }
+        })
     </script>
 </body>
 

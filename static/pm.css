@@ -1,18 +1,21 @@
 /* 基础设置 */
 html {
     font-size: 16px; /* 设定基础字体大小 */
+
 }
 
 /* 全局样式 */
 body {
     font-family: Arial, sans-serif;
+    /* line-height: 1.6; */
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
-    font-size: 2.5vw; /* 基于 375px 设计的字体大小 */
+    background-color: #f4f4f4;
+    position: relative;
 }
 
 h1 {
+    caret-color: transparent;
     text-align: center;
     font-size: 7vw; /* 调整标题大小 */
     margin: 5vw 0;
@@ -41,6 +44,7 @@ div.error {
 
 /* 按钮样式 */
 button.toggle-button {
+    caret-color: transparent;
     display: block;
     margin: 1vw auto;
     width: 30vw;
@@ -54,7 +58,7 @@ button.toggle-button {
     cursor: pointer;
 }
 
-button.toggle-button:hover {
+button.toggle-button:active {
     background-color: #0056b3;
 }
 
@@ -116,33 +120,75 @@ button[type="submit"] {
     cursor: pointer;
 }
 
-button[type="submit"]:hover {
+button[type="submit"]:active {
     background-color: #218838;
 }
-/* 批量添加链接 */
-.bulk-add-link {
-	display: flex;
-	max-width: 200px;
-	justify-content: center;
-	align-items: center;
-	margin: 10px auto;
-	flex-wrap: wrap;
+.postinon {
+    position: relative;
 }
-.bulk-add-link a {
-  text-decoration: none;
-  display: flex;
-  width: 30vw;
-  box-sizing: border-box;
-  justify-content: center;
-  align-items: center;
-  background-color: #007bff;
-  color: white;
-  text-align: center;
-  border-radius: 1.5vw;
-  margin: 1vw auto;
-  padding: 1.5vw 3vw;
-  font-size: 3vw;
-        }
-.bulk-add-link a:hover {
-  background-color: #0056b3;
+.box {
+    position: absolute;
+    font-size: 2.5vw;
+    top: 50%;
+    width: 100vw;
+    transform: translateY(-50%);
+    overflow: hidden;
+    right: 0;
+    pointer-events: none;
+}
+.list-title {
+    pointer-events: all;
+    position: absolute;
+    background-color: #007bff;
+    right: 0;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 2vw 3vw;
+    border-radius: 2vw 0 0 2vw;
+    transform: translateX(100%);
+    animation-duration: .8s;
+    animation-timing-function: inherit;
+    animation-fill-mode: forwards;
+    caret-color: transparent;
+}
+@keyframes on {
+    to {
+        transform: translateX(0%);
+    }
+}
+
+@keyframes off {
+    0%{
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+.list-title span {
+    text-align: center;
+    line-height: 6vw;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    background-color: #007bff;
+    transform: translate(-95%, -50%);
+    border-radius: 1vw 0 0 1vw;
+    width: 5vw;
+    height: 6vw;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    caret-color: transparent;
+}
+.list-title a {
+    display: block;
+    text-decoration: none;
+    color: white;
+    margin: 0.5vw 0;
+}
+.list-title a:active {
+    color: #ccc;
 }

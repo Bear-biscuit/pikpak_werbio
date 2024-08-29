@@ -5,9 +5,11 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
+    overflow: hidden;
 }
 
 h1 {
+    caret-color: transparent;
     text-align: center;
     color: #333;
     padding: 20px;
@@ -50,6 +52,7 @@ div.error {
 
 /* 按钮样式 */
 button.toggle-button {
+    caret-color: transparent;
     display: block;
     margin: 20px auto;
     padding: 10px 20px;
@@ -72,6 +75,7 @@ table {
     border-collapse: collapse;
     background: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    caret-color: transparent;
 }
 
 th, td {
@@ -110,9 +114,12 @@ input[type="text"] {
     border-radius: 4px;
     width: 100%;
     max-width: 150px;
+    caret-color: black;
+    outline: none;
 }
 
 button[type="submit"] {
+    caret-color: transparent;
     padding: 5px 10px;
     border: none;
     border-radius: 4px;
@@ -124,29 +131,73 @@ button[type="submit"] {
 button[type="submit"]:hover {
     background: #218838;
 }
-/* 批量添加链接 */
-.bulk-add-link {
-	display: flex;
-	max-width: 200px;
-	justify-content: center;
-	align-items: center;
-	margin: 10px auto;
-	flex-wrap: wrap;
+.postinon {
+    position: relative;
 }
-.bulk-add-link a {
-  text-decoration: none;
-  display: flex;
-  width: 112px;
-  justify-content: center;
-  align-items: center;
-  background-color: #007bff;
-  color: white;
-  text-align: center;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 16px;
-  margin-top: 20px;
-        }
-.bulk-add-link a:hover {
-  background-color: #0056b3;
+.box {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    overflow: hidden;
+    right: 0;
+    width: 100%;
+    pointer-events: none;
 }
+.list-title {
+    pointer-events: all;
+    position: absolute;
+    background-color: #007bff;
+    right: 0;
+    /* width: 120px; */
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 10px 20px;
+    border-radius: 20px 0 0 20px;
+    transform: translateX(100%);
+    animation-duration: .8s;
+    animation-timing-function: inherit;
+    animation-fill-mode: forwards;
+    caret-color: transparent;
+}
+@keyframes on {
+    to {
+        transform: translateX(0%);
+    }
+}
+
+@keyframes off {
+    0%{
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+.list-title span {
+    text-align: center;
+    line-height: 30px;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    background-color: #007bff;
+    transform: translate(-100%, -50%);
+    border-radius: 10px 0 0 10px;
+    width: 20px;
+    height: 30px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    caret-color: transparent;
+}
+.list-title a {
+    display: block;
+    text-decoration: none;
+    color: white;
+    margin: 5px 0;
+}
+.list-title a:hover {
+    color: #ccc;
+}
+
