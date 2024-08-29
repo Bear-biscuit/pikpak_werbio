@@ -50,7 +50,7 @@ https://example.com/public_email
 pik.py 为会员邀请程序  
 app.py 为邮箱文本管理程序  
 gather.py 为整合版  
-邮箱文本管理程序默认路径为https://example.com/email  
+整合版邮箱文本管理程序默认路径为https://example.com/email  
 
 ## 运行
 安装依赖 
