@@ -1053,13 +1053,31 @@ def web_app():
                 color: #495057;
                 font-size: 12px;
             }
+            #a {
+                text-decoration: none;
+                margin: 20px auto;
+                display: flex;
+                width: 100px;
+                height: 40px;
+                justify-content: center;
+                align-items: center;
+                background-color: #007bff;
+                color: white;
+                text-align: center;
+                border-radius: 10px;
+                padding: 5px;
+            }
+            #a:hover {
+                background-color: #0069d9;
+            }
         </style>
     ''')
 
     put_html('<script>document.title = "PIKPAK临时会员邀请程序";</script>')
     put_html('<div class="pywebio_header">PIKPAK临时会员邀请程序</div>')
     put_html('<div class="km_title">随用随充次日会员会掉 邀请超50人充不上需要换号 多刷无效<br> 服务器断开/页面卡住解决方法: 复制网址到微信消息里访问</div>')
-
+    # 邮箱管理跳转按钮 
+    # put_html('<a id="a" href="/email">邮箱管理</a>')
     form_data = input_group("", [
         input("请输入你的邀请码6-8位数字:", name="incode", type=TEXT,
               required=True, placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字"),
