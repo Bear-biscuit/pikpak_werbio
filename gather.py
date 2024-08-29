@@ -1011,7 +1011,7 @@ def main(incode, num_invitations=5):
                     current_timestamp = time.time()
                     # 更新文件中的邮箱和密码状态 添加时间
                     update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
-                    return f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123"
+                    return f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123 <br>请重新打开邀请页面，查看邀请记录是否显示‘待定’"
                 else:
                     result = f"未知情况: {activation}"
                     print(result)
