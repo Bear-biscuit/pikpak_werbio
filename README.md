@@ -48,7 +48,7 @@ https://example.com/public_email
 
 ## 代码详情
 pik.py 为会员邀请程序  
-app.py 为邮箱文本管理程序
+app.py 为邮箱文本管理程序  
 gather.py 为整合版
 
 ## 运行
@@ -62,7 +62,7 @@ pip install -r requirements.txt
 python app.py
 python pik.py
 ```
-或 单独运行 gather.py
+或单独运行 gather.py
 ```
 python gather.py
 ```
