@@ -50,11 +50,6 @@ https://example.com/public_email
 邮箱卡购买地址:
 - [https://shanyouxiang.com/](https://shanyouxiang.com/)
 
-## 代码详情
-pik.py 为会员邀请程序  
-app.py 为邮箱文本管理程序  
-gather.py 为整合版  
-整合版邮箱文本管理程序默认路径为https://example.com/email  
 
 ## 运行
 安装依赖 
