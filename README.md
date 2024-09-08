@@ -36,6 +36,10 @@ https://example.com/public_email
 注意渲染时的密码是固定的，请确保与会员邀请程序中的密码一致
 ![image](https://github.com/user-attachments/assets/a3fc3c51-cc96-4917-9a9c-ddcec9478553)
 
+### 卡密管理页面
+支持增加、删除卡密，修改现有卡密  
+![image](https://github.com/user-attachments/assets/795fafe7-820e-46d1-bbdd-5123bdac0a88)
+
 ### 是否公开
 所有页面默认都是需要登陆后查看的，可以自行独立出部分页面  
 以共享页面为例：  
@@ -57,13 +61,7 @@ gather.py 为整合版
 ```
 pip install -r requirements.txt
 ```  
-
-分别运行 app.py 和 pik.py
-```
-python app.py
-python pik.py
-```
-或单独运行 gather.py
+运行 gather.py
 ```
 python gather.py
 ```
