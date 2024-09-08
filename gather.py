@@ -27,12 +27,34 @@ app = Flask(__name__)
 # r'替换为自己txt文件所在地址'
 file_path = r'./email.txt'
 
-# 定义卡密和其使用次数
-card_keys = {
-    "private": 1000000,
-    "public": 100,
-    "可添加多个": 10
-}
+# 卡密文件路径
+card_keys_file = r'./card_keys.json'
+
+# 从文件加载卡密信息
+def load_card_keys():
+    try:
+        with open(card_keys_file, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # 如果文件不存在，返回一个空字典
+        return {}
+
+# 保存卡密信息到文件
+def save_card_keys(card_keys):
+    with open(card_keys_file, 'w') as f:
+        json.dump(card_keys, f)
+
+# 初始化卡密信息
+card_keys = load_card_keys()
+
+# 使用卡密时，减少次数并保存
+def use_card_key(key):
+    if key in card_keys and card_keys[key] > 0:
+        card_keys[key] -= 1
+        save_card_keys(card_keys)  # 保存使用后的状态
+        return True
+    return False
+
 # --------------------------------
 
 
@@ -86,6 +108,38 @@ def index():
     
     emails = read_emails()
     return render_template('index.html', emails=emails)
+
+
+# 显示并修改、添加卡密的页面
+@app.route('/card', methods=['GET', 'POST'])
+def card_info():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        # 更新已有卡密的次数
+        for key in card_keys.keys():
+            new_count = request.form.get(key)
+            if new_count:
+                card_keys[key] = int(new_count)
+        
+        # 处理可选的新增卡密部分
+        new_key = request.form.get('new_key')
+        new_key_count = request.form.get('new_key_count')
+        if new_key and new_key_count:
+            card_keys[new_key] = int(new_key_count)
+        
+        save_card_keys(card_keys)  # 保存更新后的卡密信息
+        return redirect(url_for('card_info'))  # 刷新页面
+    
+    return render_template('card_edit.html', card_keys=card_keys)
+
+# 删除卡密的路由
+@app.route('/delete/<key>')
+def delete_key(key):
+    if key in card_keys:
+        del card_keys[key]  # 从字典中删除卡密
+        save_card_keys(card_keys)  # 保存删除后的卡密信息
+    return redirect(url_for('card_info'))  # 返回卡密页面并刷新
 
 
 # 批量添加页面
@@ -185,6 +239,7 @@ def get_email_counts():
     except requests.RequestException as e:
         print(f"请求失败: {e}")
         return {"hotmail": 0, "outlook": 0}  # 如果请求失败，返回默认数据
+
 
 # 获取余额信息
 def get_balance(card):
@@ -1098,6 +1153,7 @@ def web_app():
 
     # 更新卡密使用次数
     card_keys[card_key] -= 1
+    save_card_keys(card_keys)  # 保存更新后的卡密信息
 
     clear()
     put_html('''

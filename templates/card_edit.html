@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡密信息</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='card.css') }}">
+</head>
+
+<body>
+    <h1>卡密信息</h1>
+
+    <!-- 显示并修改现有卡密 -->
+    <form method="POST" action="{{ url_for('card_info') }}">
+        <table border="1">
+            <tr>
+                <th>卡密</th>
+                <th>剩余次数</th>
+                <th>操作</th>
+            </tr>
+            {% for key, count in card_keys.items() %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>
+                    <input type="number" name="{{ key }}" value="{{ count }}" min="0">
+                </td>
+                <td>
+                    <!-- 删除按钮 -->
+                    <a href="{{ url_for('delete_key', key=key) }}">删除</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- 新增卡密 (可选) -->
+        <h2>新增卡密 (可选)</h2>
+        <label for="new_key">卡密名称:</label>
+        <input type="text" id="new_key" name="new_key" placeholder="留空不添加">
+        <br><br>
+        <label for="new_key_count">卡密次数:</label>
+        <input type="number" id="new_key_count" name="new_key_count" value="1" min="1">
+        <br><br>
+        <button type="submit">保存修改</button>
+        <!-- 返回主页链接 -->
+        <a href="{{ url_for('index') }}">返回</a>
+    </form>
+
+</body>
+
+</html>
