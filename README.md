@@ -22,7 +22,7 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 
 
 ### 登录页面
-请在app.py的登录页部分，更改账号密码  
+请在登录页部分，更改默认账号密码  
 ![image](https://github.com/user-attachments/assets/2f890414-ceea-44f4-b07e-88de4f3c9ef0)
 
 ### 邮箱管理页面
