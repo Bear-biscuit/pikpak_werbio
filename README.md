@@ -17,7 +17,8 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 
 ### 代理池  
 代理池项目:[ProxyPoolWithUI](https://github.com/OxOOo/ProxyPoolWithUI?tab=readme-ov-file)  
-![image](https://github.com/user-attachments/assets/d1c3fa8d-a0a0-4ca3-ad3c-c545a3d113ab)
+![image](https://github.com/user-attachments/assets/e7592ec4-b5b8-4580-90aa-1bc9fb8c3e22)  
+
 
 
 ### 登录页面
