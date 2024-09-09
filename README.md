@@ -15,6 +15,10 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 ### 会员邀请主程序
 ![image](https://github.com/user-attachments/assets/cb68f956-921c-4f74-b844-32442184ae32)
 
+### 代理池  
+代理池项目:[ProxyPoolWithUI](https://github.com/OxOOo/ProxyPoolWithUI?tab=readme-ov-file)  
+![image](https://github.com/user-attachments/assets/d1c3fa8d-a0a0-4ca3-ad3c-c545a3d113ab)
+
 
 ### 登录页面
 请在app.py的登录页部分，更改账号密码  
