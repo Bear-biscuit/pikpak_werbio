@@ -431,7 +431,16 @@ def wxpusher(new_email, password, invitation_code):
 
 # 动态代理
 def get_proxy():
-    proxies = {}
+    proxy_uri = requests.get('http://106.54.244.117:5427/fetch_random').text
+    
+    
+    if len(proxy_uri) == 0:
+        proxies = {}
+    else:
+        proxies = {
+            "http": proxy_uri,
+            "https": proxy_uri
+        }
     return proxies
 
 
