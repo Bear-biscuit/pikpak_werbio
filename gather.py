@@ -356,7 +356,7 @@ def update_file_status(file_path, email, password, status, time):
         print("更新文件状态失败:", e)
 
 # POP微软邮箱登录
-def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=40):
+def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=5):
     pop3_server = "pop-mail.outlook.com"
     retries = 0
     while retries < max_retries:
@@ -431,16 +431,13 @@ def wxpusher(new_email, password, invitation_code):
 
 # 动态代理
 def get_proxy():
-    proxy_uri = requests.get('https://example.com/fetch_random').text
+    proxy_uri = requests.get('https://proxy.bocchi2b.top/fetch_random').text
     
     
     if len(proxy_uri) == 0:
         proxies = {}
     else:
-        proxies = {
-            "http": proxy_uri,
-            "https": proxy_uri
-        }
+        proxies = {}
     return proxies
 
 
@@ -995,7 +992,7 @@ def activation_code(access_token, captcha, xid, in_code):
 invite_success_limit = 1
 invitation_records = {}
 
-def main(incode, num_invitations=5):
+def main(incode, card_key, num_invitations=5):
     now = datetime.datetime.now()
     print("当前日期: ", now)
     start_time = time.time()
@@ -1036,6 +1033,8 @@ def main(incode, num_invitations=5):
 
                 if not code:
                     print(f"无法从邮箱获取验证码: {mail}")
+                    current_timestamp = ''
+                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                     continue
 
                 # 使用验证码完成其他操作
@@ -1063,6 +1062,9 @@ def main(incode, num_invitations=5):
                     current_timestamp = time.time()
                     # 更新文件中的邮箱和密码状态 添加时间
                     update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
+                    # 更新卡密使用次数
+                    card_keys[card_key] -= 1
+                    save_card_keys(card_keys)  # 保存更新后的卡密信息
                     return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123"
                 # 如果会员天数等于0 邀请成功(待定)
                 elif activation.get('add_days') == 0:
@@ -1075,6 +1077,9 @@ def main(incode, num_invitations=5):
                     current_timestamp = time.time()
                     # 更新文件中的邮箱和密码状态 添加时间
                     update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
+                    # 更新卡密使用次数
+                    card_keys[card_key] -= 1
+                    save_card_keys(card_keys)  # 保存更新后的卡密信息
                     return f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123 <br>请重新打开邀请页面，查看邀请记录是否显示‘待定’"
                 else:
                     result = f"未知情况: {activation}"
@@ -1160,9 +1165,6 @@ def web_app():
         put_text("卡密无效，联系客服")
         return
 
-    # 更新卡密使用次数
-    card_keys[card_key] -= 1
-    save_card_keys(card_keys)  # 保存更新后的卡密信息
 
     clear()
     put_html('''
@@ -1203,7 +1205,7 @@ def web_app():
     results = []
     with ThreadPoolExecutor(max_workers=10) as executor:
         # futures = [executor.submit(main, incode) for _ in range(numberInvitations)]
-        futures = [executor.submit(main, incode) for _ in range(1)]
+        futures = [executor.submit(main, incode, card_key) for _ in range(1)]
         for future in futures:
             result = future.result()
             print(result)
