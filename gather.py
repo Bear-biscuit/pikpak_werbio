@@ -356,7 +356,7 @@ def update_file_status(file_path, email, password, status, time):
         print("更新文件状态失败:", e)
 
 # POP微软邮箱登录
-def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=5):
+def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=3):
     pop3_server = "pop-mail.outlook.com"
     retries = 0
     while retries < max_retries:
