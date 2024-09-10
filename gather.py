@@ -1042,7 +1042,8 @@ def main(incode, card_key, num_invitations=5):
 
                 if not code:
                     print(f"无法从邮箱获取验证码: {mail}")
-                    current_timestamp = ''
+                    # 获取当前时间
+                    current_timestamp = time.time()
                     update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                     return "邮箱登录/验证失败，请刷新重试"
 
@@ -1093,8 +1094,8 @@ def main(incode, card_key, num_invitations=5):
                 else:
                     result = f"未知情况: {activation}"
                     print(result)
-
-                    current_timestamp = ''
+                    # 获取当前时间
+                    current_timestamp = time.time()
                     update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                     return result
 
