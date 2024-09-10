@@ -724,6 +724,10 @@ def verify(xid, verification_id, code):
                 url, json=body, headers=headers, timeout=5)
             response_data = response.json()
             print('验证码验证结果')
+            # 遍历 details 列表，检查是否有包含 '验证码不正确' 的 message
+            for detail in response_data.get('details', []):
+                if 'message' in detail and '验证码不正确' in detail['message']:
+                    return '验证码不正确'
             return response_data
         except:
             retries += 1
@@ -1049,6 +1053,11 @@ def main(incode, card_key, num_invitations=5):
 
                 # 使用验证码完成其他操作
                 verification_response = verify(xid, Verification['verification_id'], code)
+                if(verification_response == '验证码不正确'):
+                    # 获取当前时间
+                    current_timestamp = time.time()
+                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                    return '验证码不正确'
                 signup_response = signup(xid, mail, code, verification_response['verification_token'])
                 current_time = str(int(time.time()))
                 sign = get_sign(xid, current_time)
