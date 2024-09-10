@@ -431,13 +431,20 @@ def wxpusher(new_email, password, invitation_code):
 
 # 动态代理
 def get_proxy():
-    proxy_uri = requests.get('https://proxy.bocchi2b.top/fetch_random').text
-    
+
+    proxy_uri = requests.get('https://example.com/fetch_random').text
     
     if len(proxy_uri) == 0:
         proxies = {}
+        # print('获取代理失败')
     else:
-        proxies = {}
+        proxies = {
+            # 如果你不想使用代理池，请把下面两条语句删掉
+            # 不使用极大概率奖励不生效
+            'http': proxy_uri,
+            'https': proxy_uri
+        }
+        # print('获取代理成功')
     return proxies
 
 
@@ -613,7 +620,7 @@ def get_new_token(xid, captcha):
             return response_data
         except:
             retries += 1
-
+    return '连接超时'
 # 发送验证码
 def verification(captcha_token, xid, mail):
     global randint_ip
@@ -1025,6 +1032,8 @@ def main(incode, card_key, num_invitations=5):
                 # 执行初始化安全验证
                 Init = init(xid, mail)
                 captcha_token_info = get_new_token(xid, Init['captcha_token'])
+                if (captcha_token_info == '连接超时'):
+                     return "连接超时,请刷新重试，多次失败请联系管理员查看代理池"
                 Verification = verification(
                     captcha_token_info['captcha_token'], xid, mail)
 
@@ -1035,7 +1044,7 @@ def main(incode, card_key, num_invitations=5):
                     print(f"无法从邮箱获取验证码: {mail}")
                     current_timestamp = ''
                     update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-                    continue
+                    return "邮箱登录/验证失败，请刷新重试"
 
                 # 使用验证码完成其他操作
                 verification_response = verify(xid, Verification['verification_id'], code)
