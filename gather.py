@@ -431,7 +431,7 @@ def wxpusher(new_email, password, invitation_code):
 
 # 动态代理
 def get_proxy():
-
+    # 请更改为你自己的代理池地址
     proxy_uri = requests.get('https://example.com/fetch_random').text
     
     if len(proxy_uri) == 0:
