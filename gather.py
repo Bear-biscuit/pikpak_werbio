@@ -44,32 +44,6 @@ def save_announcement(data):
     with open(JSON_FILE_PATH, 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
 
-# 编辑公告页面
-@app.route('/edit_announcement', methods=['GET', 'POST'])
-def edit_announcement():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-    if request.method == 'POST':
-        # 获取表单数据
-        enable = request.form.get('enable') == 'on'
-        title = request.form.get('title')
-        message = request.form.get('message')  # HTML富文本公告内容
-
-        # 更新JSON文件内容
-        announcement_data = {
-            "enable": enable,
-            "title": title,
-            "message": message
-        }
-        save_announcement(announcement_data)
-        flash('保存成功', 'success')
-        # 重定向到编辑页面
-        return redirect(url_for('edit_announcement'))
-
-    # 如果是GET请求，读取公告并显示
-    announcement_data = read_announcement()
-    return render_template('edit_announcement.html', announcement=announcement_data)
-
 # 提供公告内容的API，返回JSON格式公告
 @app.route('/api/announcement', methods=['GET'])
 def api_announcement():
@@ -155,6 +129,31 @@ def index():
     emails = read_emails()
     return render_template('index.html', emails=emails)
 
+# 公告编辑页面
+@app.route('/edit_announcement', methods=['GET', 'POST'])
+def edit_announcement():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        # 获取表单数据
+        enable = request.form.get('enable') == 'on'
+        title = request.form.get('title')
+        message = request.form.get('message')  # HTML富文本公告内容
+
+        # 更新JSON文件内容
+        announcement_data = {
+            "enable": enable,
+            "title": title,
+            "message": message
+        }
+        save_announcement(announcement_data)
+        flash('保存成功', 'success')
+        # 重定向到编辑页面
+        return redirect(url_for('edit_announcement'))
+
+    # 如果是GET请求，读取公告并显示
+    announcement_data = read_announcement()
+    return render_template('edit_announcement.html', announcement=announcement_data)
 
 # 显示并修改、添加卡密的页面
 @app.route('/card', methods=['GET', 'POST'])
