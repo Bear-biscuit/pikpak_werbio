@@ -37,15 +37,31 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 把你的key填入后进行更新，输入数量后获取账号，可以自动添加到右方文本框中  
 ![image](https://github.com/user-attachments/assets/9962762c-8974-48f0-a9d1-973e4234def0)
 
+### 卡密管理页面
+支持增加、删除卡密，修改现有卡密  
+![image](https://github.com/user-attachments/assets/795fafe7-820e-46d1-bbdd-5123bdac0a88)  
+
+### 通知设置
+[免费注册tiny](https://www.tiny.cloud/)  
+复制api key  
+![image](https://github.com/user-attachments/assets/4a125eb9-2de9-402a-a77b-d039cd703001)  
+在```edit_announcement.html```中修改链接中的‘你的api密钥’为你的api key   
+![image](https://github.com/user-attachments/assets/459bd39c-67d0-40d6-83f0-c2ab219cd7c2)  
+在[域名白名单](https://www.tiny.cloud/my-account/domains/)中添加你的域名  
+![image](https://github.com/user-attachments/assets/16867cf0-1fe7-4c89-a3a2-a56415b3cfe2)  
+编辑通知  
+![image](https://github.com/user-attachments/assets/b731deec-e90b-4326-918e-95769e01de2d)  
+显示通知  
+![image](https://github.com/user-attachments/assets/a4a7e9e9-84f6-47ed-9b3c-dd974d6bf216)
+
+
+
 
 ### 会员共享页面
 只会显示近三天邀请成功的账号  
 注意渲染时的密码是固定的，请确保与会员邀请程序中的密码一致
 ![image](https://github.com/user-attachments/assets/a3fc3c51-cc96-4917-9a9c-ddcec9478553)
 
-### 卡密管理页面
-支持增加、删除卡密，修改现有卡密  
-![image](https://github.com/user-attachments/assets/795fafe7-820e-46d1-bbdd-5123bdac0a88)
 
 ### 是否公开
 所有页面默认都是需要登陆后查看的，可以自行独立出部分页面  
