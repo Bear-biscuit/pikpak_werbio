@@ -51,7 +51,7 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 在[域名白名单](https://www.tiny.cloud/my-account/domains/)中添加你的域名  
 ![image](https://github.com/user-attachments/assets/16867cf0-1fe7-4c89-a3a2-a56415b3cfe2)  
 新增通知信息  
-![image](https://github.com/user-attachments/assets/e411bd6e-26fb-4c29-a5d5-d0d494bbe764)  
+![image](https://github.com/user-attachments/assets/37852543-d88e-470f-93b8-86b14423f25e)  
 支持编辑、删除现有的通知信息   
 ![image](https://github.com/user-attachments/assets/3c4e8565-3c1e-4e1a-9cb5-fd621554731d)
 
