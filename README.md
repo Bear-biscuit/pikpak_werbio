@@ -42,11 +42,10 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 ![image](https://github.com/user-attachments/assets/795fafe7-820e-46d1-bbdd-5123bdac0a88)  
 
 ### 通知设置
-在```edit_announcement.html```中修改链接中的卡密  
 [免费注册tiny](https://www.tiny.cloud/)  
 复制api key  
 ![image](https://github.com/user-attachments/assets/4a125eb9-2de9-402a-a77b-d039cd703001)  
-将‘你的api密钥’替换成你复制的api key  
+在```edit_announcement.html```中修改链接中的‘你的api密钥’为你的api key   
 ![image](https://github.com/user-attachments/assets/459bd39c-67d0-40d6-83f0-c2ab219cd7c2)  
 在[域名白名单](https://www.tiny.cloud/my-account/domains/)中添加你的域名  
 ![image](https://github.com/user-attachments/assets/16867cf0-1fe7-4c89-a3a2-a56415b3cfe2)  
