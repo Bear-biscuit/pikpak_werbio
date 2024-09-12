@@ -6,6 +6,98 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Manager</title>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #2196F3;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        #timer {
+            font-size: 0.8em;
+            color: #333;
+            margin-left: 5px;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+        }
+
+        label {
+            font-size: 0.8em;
+            color: #333;
+            margin-right: 10px;
+        }
+
+        input[type="number"] {
+            padding: 2px;
+            font-size: 0.8em;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            transition: border-color 0.3s ease;
+            width: 30px;
+        }
+
+        input[type="number"]:focus {
+            border-color: #2196F3;
+            outline: none;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+        }
+        .survi {
+            margin: 0 20px;
+            background-color: #ffffff;
+            padding: 5px;
+            border: 1px #9c9c9c63 solid;
+            box-shadow: 0px 0px 5px 3px rgba(170, 170, 170, 0.3);
+            border-radius: 15px;
+        }
+        .runbtn {
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='pc.css') }}" media="screen and (min-width: 501px)">
     <link rel="stylesheet" href="{{ url_for('static', filename='pm.css') }}" media="screen and (max-width: 500px)">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
@@ -23,6 +115,18 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
+    <div class="survi">
+        <div class="form-group">
+            <label for="interval">检测间隔(分钟)：</label>
+            <input type="number" id="interval" name="interval" min="1" placeholder="输入时间间隔">
+        </div>
+        <div class="runbtn"><label class="switch">
+            <input type="checkbox" id="detectionToggle">
+            <span class="slider"></span>
+        </label>
+        <span id="status">检测已停止</span>
+        <span id="timer"></span></div>
+    </div>
 <div class="postinon">
     <div class="box">
         <div class="list-title">
@@ -43,6 +147,7 @@
     </div>
     <button id="toggle-button" class="toggle-button" onclick="toggleAccounts()">显示已使用账号</button>
 </div>
+
     <table id="non-logged-in-accounts">
         <tr>
             <th>Email</th>
@@ -127,6 +232,101 @@
         {% endif %}
         {% endfor %}
     </table>
+    <script>
+        const toggle = document.getElementById('detectionToggle');
+        const statusText = document.getElementById('status');
+        const timerDisplay = document.getElementById('timer');
+        const intervalInput = document.getElementById('interval');
+        let countdownInterval;
+
+
+
+        // 加载初始状态
+        function loadStatus() {
+            fetch('/get_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.detection_active) {
+                        toggle.checked = true;
+                        statusText.textContent = '检测已启动';
+                        intervalInput.value = data.interval / 60; // 显示为分钟
+                        updateCountdown(data.next_check);
+                    } else {
+                        toggle.checked = false;
+                        statusText.textContent = '检测已停止';
+                        intervalInput.value = data.interval / 60; // 显示为分钟
+                        timerDisplay.textContent = '';
+                    }
+                });
+        }
+        // 更新计时器显示
+        function updateCountdown(nextCheckTime) {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            countdownInterval = setInterval(() => {
+                const now = Math.floor(Date.now() / 1000);
+                const timeLeft = nextCheckTime - now;
+                if (timeLeft <= 0) {
+                    timerDisplay.textContent = '下次检测: 现在';
+                    clearInterval(countdownInterval);
+                } else {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = parseInt(timeLeft % 60);
+                    timerDisplay.textContent = `下次检测: ${minutes}分 ${seconds}秒`;
+                }
+            }, 1000);
+        }
+
+        toggle.addEventListener('change', function () {
+            const action = toggle.checked ? 'start' : 'stop';
+            const interval = document.getElementById('interval').value * 60;  // 将分钟转换为秒
+            if (action === 'start') {
+                toggle.disabled = false;
+                statusText.textContent = '检测已启动';
+                loadStatus();
+                fetch('/toggle_detection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: action, interval: interval })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'started') {
+                            startCountdown(interval);
+                        } else {
+                            statusText.textContent = '发生错误';
+                            toggle.checked = false;
+                        }
+                    });
+            } else {
+                toggle.disabled = true;
+                statusText.textContent = '关闭中……';
+                clearInterval(countdownInterval);
+                timerDisplay.textContent = '';
+                fetch('/toggle_detection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: action })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'stopped') {
+                            statusText.textContent = '检测已停止';
+                            toggle.disabled = false;
+                        } else {
+                            statusText.textContent = '发生错误';
+                        }
+                    });
+            }
+        });
+        // 页面加载时读取状态
+        loadStatus();
+    </script>
     <script>
         function toggleAccounts() {
             var nonLoggedInTable = document.getElementById('non-logged-in-accounts');

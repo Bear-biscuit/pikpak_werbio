@@ -2,7 +2,7 @@ import os
 import datetime
 import requests
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import poplib
 import hashlib
 import json
@@ -12,9 +12,7 @@ import time
 import requests
 import uuid
 import email
-
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import ThreadPoolExecutor
+import threading
 from pywebio.input import input_group, input, TEXT
 from pywebio.output import put_text, put_markdown, clear, put_html
 from pywebio import start_server
@@ -171,12 +169,21 @@ def logout():
     flash('您已成功退出登录。', 'success')
     return redirect(url_for('login'))
 
+
+initialized = False
 # 首页路径 email 
 @app.route('/email')
 def index():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    
+    global initialized
+    if not initialized:
+        write_status({
+            'detection_active': False,
+            'interval': 600,
+            'next_check': 0
+        })
+        initialized = True
     emails = read_emails()
     return render_template('index.html', emails=emails)
 
@@ -1118,6 +1125,157 @@ def activation_code(access_token, captcha, xid, in_code):
             return response_data
         except:
             retries += 1
+
+# -------------------------- 邮箱保活部分--------------------------
+# 全局变量用于控制检测任务的开启和关闭
+detection_active = False
+detection_thread = None
+detection_event = threading.Event()  # 用于检测任务是否完成 
+STATUS_FILE = 'status.json'
+# 读取txt文件并显示调试信息
+def read_status():
+    with open(STATUS_FILE, 'r') as f:
+        return json.load(f)
+
+def write_status(data):
+    with open(STATUS_FILE, 'w') as f:
+        json.dump(data, f)
+
+
+
+@app.route('/get_status')
+def get_status():
+    status = read_status()
+    return jsonify(status)
+
+
+def read_email_file(file_path):
+    accounts = []
+    with open(file_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+        print(f"读取到 {len(lines)} 行内容")
+        for line in lines:
+            line = line.strip()
+            if ' 登录成功' in line or ' 失败' in line:
+                print(f"跳过处理已标记的行: {line}")
+            else:
+                parts = line.split('----')
+                if len(parts) == 2:
+                    email = parts[0]
+                    password = parts[1]
+                    print(f"准备检测邮箱: {email}")
+                    accounts.append({'line': line, 'email': email, 'password': password, 'status': ''})
+                else:
+                    print(f"跳过无法解析的行: {line}")
+    return accounts
+
+# 尝试通过POP3登录邮箱，并动态检测是否需要停止
+def check_email_login(account):
+    global detection_active
+    email = account['email']
+    password = account['password']
+    
+    retries = 3
+    for attempt in range(1, retries + 1):
+        if not detection_active:
+            print(f"检测中断，邮箱 {email} 未检测")
+            return email, "检测中断"
+        
+        try:
+            print(f"正在尝试第 {attempt} 次登录: {email}")
+            server = poplib.POP3_SSL('pop-mail.outlook.com', 995)
+            server.user(email)
+            server.pass_(password)
+            server.quit()
+            print(f"邮箱 {email} 登录成功")
+            return email, "登录成功"
+        except poplib.error_proto as e:
+            if b'-ERR Logon failure: unknown user name or bad password.' in str(e).encode():
+                print(f"邮箱 {email} 登录失败: {str(e)}，直接删除")
+                return email, "删除"
+            print(f"邮箱 {email} 第 {attempt} 次尝试登录失败: {str(e)}")
+            if attempt == retries:
+                return email, "删除"
+
+# 实时更新txt文件
+def update_file_line(file_path, account):
+    with open(file_path, 'r+', encoding='utf-8') as file:
+        lines = file.readlines()
+        if account['status'] == '登录成功':
+            for i, line in enumerate(lines):
+                if account['email'] in line and account['password'] in line:
+                    lines[i] = account['line'] + '\n'
+                    break
+        elif account['status'] == '删除':
+            lines = [line for line in lines if account['email'] not in line and account['password'] not in line]
+        file.seek(0)
+        file.writelines(lines)
+        file.truncate()
+        print(f"文件 {file_path} 已更新")
+
+# 多线程检测邮箱登录
+def check_emails_multithread(accounts, file_path, max_workers=50):
+    global detection_active
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(check_email_login, account): account for account in accounts}
+        print(f"开始多线程检测，共 {len(futures)} 个任务")
+        for future in as_completed(futures):
+            account = futures[future]
+            email, result = future.result()
+            account['status'] = result
+            if detection_active:
+                update_file_line(file_path, account)
+
+# 定时检测任务
+def email_detection_task(interval, file_path):
+    global detection_active
+    while detection_active:
+        print("开始邮箱检测...")
+        detection_event.clear()
+        check_emails_multithread(read_email_file(file_path), file_path, max_workers=50)
+        detection_event.set()
+        next_check_time = time.time() + interval
+        write_status({
+            'detection_active': detection_active,
+            'interval': interval,
+            'next_check': next_check_time
+        })
+        time.sleep(interval)
+
+
+
+@app.route('/toggle_detection', methods=['POST'])
+def toggle_detection():
+    global detection_active, detection_thread
+    action = request.json.get('action')
+    interval = int(request.json.get('interval', 600))  # 默认间隔为10分钟（600秒）
+
+    if action == 'start' and not detection_active:
+        detection_active = True
+        detection_thread = threading.Thread(target=email_detection_task, args=(interval, 'email.txt'))
+        detection_thread.start()
+        # 更新状态文件
+        next_check_time = time.time() + interval
+        write_status({
+            'detection_active': detection_active,
+            'interval': interval,
+            'next_check': next_check_time
+        })
+        return jsonify({'status': 'started'})
+    
+    elif action == 'stop' and detection_active:
+        detection_active = False
+        detection_event.set()  # 触发事件，通知任务停止
+        if detection_thread:
+            detection_thread.join(timeout=5)  # 等待最多5秒
+        # 更新状态文件
+        write_status({
+            'detection_active': detection_active,
+            'interval': interval,
+            'next_check': 0  # 停止检测时，下次检查时间设为0
+        })
+        return jsonify({'status': 'stopped'})
+    return jsonify({'status': 'error'})
 
 # -------------------------- 主函数一系列网络请求--------------------------
 invite_success_limit = 1
