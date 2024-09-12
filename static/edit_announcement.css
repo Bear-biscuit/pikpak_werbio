@@ -1,0 +1,98 @@
+body {
+    font-family: 'Arial', sans-serif;
+    padding: 20px;
+    background-color: #e9ecef;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.container {
+    margin: 10% auto;
+    width: 90vw;
+    max-width: 600px;
+    background-color: #fff;
+    padding: 2%;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+label {
+    display: inline-block;
+    margin: 15px 0 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.tox-tinymce {
+    border-radius: 1% !important;
+    border: 1px solid #ddd !important;
+}
+
+input[type="checkbox"] {
+    margin-right: 10px;
+    outline: none;
+}
+select {
+    outline: none;
+    border: 1px solid #ddd;
+    border-radius: 10%;
+}
+button {
+    display: block;
+    width: 30%;
+    padding: 2% 4%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 5% auto;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.message {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 16px;
+    color: #28a745;
+}
+
+.back-button {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-button a {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.back-button a:hover {
+    text-decoration: underline;
+}

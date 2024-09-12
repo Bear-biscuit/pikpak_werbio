@@ -33,22 +33,73 @@ card_keys_file = r'./card_keys.json'
 # 公告内容文件
 JSON_FILE_PATH = r'./announcement.json'
 
-# 读取公告内容
-def read_announcement():
-    with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
-        data = json.load(file)
+# 读取公告
+def read_announcements():
+    if not os.path.exists(JSON_FILE_PATH):
+        return []
+    try:
+        with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+    except (IOError, json.JSONDecodeError) as e:
+        print(f"读取公告时发生错误: {e}")
+        data = []
     return data
+# 保存公告
+def save_announcements(data):
+    try:
+        with open(JSON_FILE_PATH, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+    except IOError as e:
+        print(f"保存公告时发生错误: {e}")
 
-# 保存公告内容
-def save_announcement(data):
-    with open(JSON_FILE_PATH, 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
 
-# 提供公告内容的API，返回JSON格式公告
-@app.route('/api/announcement', methods=['GET'])
-def api_announcement():
-    announcement_data = read_announcement()
-    return jsonify(announcement_data)
+# 提供指定ID公告的API
+@app.route('/api/announcement/<int:announcement_id>', methods=['GET'])
+def api_announcement_detail(announcement_id):
+    announcements = read_announcements()
+    
+    # 根据ID查找公告
+    announcement = next((a for a in announcements if a['id'] == announcement_id), None)
+    
+    if announcement:
+        return jsonify(announcement)
+    else:
+        # 如果找不到公告，返回404状态码和JSON格式的错误消息
+        return jsonify({'error': '公告未找到'}), 404
+
+# 提供当前启用的公告API
+@app.route('/api/announcement/active', methods=['GET'])
+def api_active_announcement():
+    announcements = read_announcements()
+    
+    # 查找启用的公告
+    active_announcement = next((a for a in announcements if a['enable']), None)
+    
+    if active_announcement:
+        return jsonify(active_announcement)
+    else:
+        # 如果没有启用的公告，返回404
+        return jsonify({'error': '没有启用的公告'}), 404
+
+@app.route('/delete_announcement/<int:announcement_id>', methods=['POST'])
+def delete_announcement(announcement_id):
+    announcements = read_announcements()
+
+    # 查找并删除公告
+    updated_announcements = [a for a in announcements if a['id'] != announcement_id]
+
+    # 如果删除后公告数量减少，则保存更新后的公告列表
+    if len(updated_announcements) < len(announcements):
+        save_announcements(updated_announcements)
+        flash('公告已删除', 'success')
+    else:
+        flash('未找到该公告', 'error')
+
+    return redirect(url_for('edit_announcement'))
+
+
+
+
 
 # 从文件加载卡密信息
 def load_card_keys():
@@ -134,26 +185,50 @@ def index():
 def edit_announcement():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
+    
+    # 读取所有公告
+    announcements = read_announcements()
+
     if request.method == 'POST':
         # 获取表单数据
+        announcement_id = int(request.form.get('announcement_id', -1))
         enable = request.form.get('enable') == 'on'
         title = request.form.get('title')
         message = request.form.get('message')  # HTML富文本公告内容
 
-        # 更新JSON文件内容
-        announcement_data = {
-            "enable": enable,
-            "title": title,
-            "message": message
-        }
-        save_announcement(announcement_data)
+        # 如果一个公告被启用，禁用其他公告
+        if enable:
+            for announcement in announcements:
+                announcement['enable'] = False
+
+        if announcement_id == -1:
+            # 添加新的公告
+            new_id = max([a['id'] for a in announcements], default=0) + 1
+            announcements.append({
+                "id": new_id,
+                "enable": enable,
+                "title": title,
+                "message": message
+            })
+        else:
+            # 更新现有公告
+            for announcement in announcements:
+                if announcement['id'] == announcement_id:
+                    announcement.update({
+                        "enable": enable,
+                        "title": title,
+                        "message": message
+                    })
+                    break
+
+        # 保存更新后的公告列表
+        save_announcements(announcements)
         flash('保存成功', 'success')
-        # 重定向到编辑页面
         return redirect(url_for('edit_announcement'))
 
-    # 如果是GET请求，读取公告并显示
-    announcement_data = read_announcement()
-    return render_template('edit_announcement.html', announcement=announcement_data)
+    # 如果是GET请求，读取所有公告并显示
+    return render_template('edit_announcement.html', announcements=announcements)
+
 
 # 显示并修改、添加卡密的页面
 @app.route('/card', methods=['GET', 'POST'])
@@ -1324,13 +1399,21 @@ def web_app():
     
     # 尝试调用API获取公告内容
     try:
-        response = requests.get('http://127.0.0.1:5000/api/announcement')  # Flask API URL
+        # 请求Flask API获取启用的公告（后端需要支持启用公告的API）
+        response = requests.get('http://127.0.0.1:5000/api/announcement/active')  # 假设有一个返回启用公告的API
+        response.raise_for_status()  # 检查是否有HTTP错误
         data = response.json()  # 将返回的JSON数据转换为Python字典
+        
+        if data.get('error'):
+            print("未找到启用的公告")
+            return None
+
         is_enabled = data['enable']  # 获取是否开启公告
         announcement_title = data['title']
         announcement_message = data['message']
-    except Exception as e:
-        # 如果API调用失败，跳过公告处理
+
+    except requests.exceptions.RequestException as e:
+        # 如果API调用失败，打印错误信息并跳过公告处理
         print(f"API调用失败: {e}")
         is_enabled = False  # 设置为False以跳过公告显示
 

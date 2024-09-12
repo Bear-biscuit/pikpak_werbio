@@ -1,5 +1,20 @@
-{
-    "enable": true,
-    "title": "测试标题",
-    "message": "<p>测试公告</p>"
-}
+[
+    {
+        "id": 1,
+        "enable": true,
+        "title": "测试标题1",
+        "message": "<p>测试内容1</p>"
+    },
+    {
+        "id": 2,
+        "enable": false,
+        "title": "测试标题2",
+        "message": "<p>测试内容2</p>"
+    },
+    {
+        "id": 3,
+        "enable": false,
+        "title": "新增标题1",
+        "message": "<p>新增内容1</p>"
+    }
+]
