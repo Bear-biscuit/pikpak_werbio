@@ -1,7 +1,7 @@
 import os
 import datetime
 import requests
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 
 import poplib
 import hashlib
@@ -29,6 +29,52 @@ file_path = r'./email.txt'
 
 # 卡密文件路径
 card_keys_file = r'./card_keys.json'
+
+# 公告内容文件
+JSON_FILE_PATH = r'./announcement.json'
+
+# 读取公告内容
+def read_announcement():
+    with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    return data
+
+# 保存公告内容
+def save_announcement(data):
+    with open(JSON_FILE_PATH, 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+# 编辑公告页面
+@app.route('/edit_announcement', methods=['GET', 'POST'])
+def edit_announcement():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        # 获取表单数据
+        enable = request.form.get('enable') == 'on'
+        title = request.form.get('title')
+        message = request.form.get('message')  # HTML富文本公告内容
+
+        # 更新JSON文件内容
+        announcement_data = {
+            "enable": enable,
+            "title": title,
+            "message": message
+        }
+        save_announcement(announcement_data)
+        flash('保存成功', 'success')
+        # 重定向到编辑页面
+        return redirect(url_for('edit_announcement'))
+
+    # 如果是GET请求，读取公告并显示
+    announcement_data = read_announcement()
+    return render_template('edit_announcement.html', announcement=announcement_data)
+
+# 提供公告内容的API，返回JSON格式公告
+@app.route('/api/announcement', methods=['GET'])
+def api_announcement():
+    announcement_data = read_announcement()
+    return jsonify(announcement_data)
 
 # 从文件加载卡密信息
 def load_card_keys():
@@ -1122,84 +1168,377 @@ def main(incode, card_key, num_invitations=5):
             return result
 
 # html页面
+from pywebio.output import put_html, clear, put_markdown
+from pywebio.session import run_js
+from concurrent.futures import ThreadPoolExecutor
+
+from pywebio.output import put_html, clear, put_markdown, toast
+from pywebio.session import eval_js
+from concurrent.futures import ThreadPoolExecutor
+
+# html页面
 def web_app():
     put_html('''
-        <style>
+            <style>
+            /* 移除页面底部 */
             .footer {
                 display: none !important;
             }
-            
+
+            /* 页头样式 */
             .pywebio_header {
                 text-align: center;
-                font-size: 24px;
+                font-size: 26px;
                 font-weight: bold;
-                margin-bottom: 20px;
+                margin-bottom: 30px;
+                color: #333;
+                font-family: 'Arial', sans-serif;
+                letter-spacing: 2px;
             }
-            
+
+            /* 说明文字样式 */
             .km_title {
                 text-align: center;
                 color: #495057;
-                font-size: 12px;
+                font-size: 14px;
+                font-family: 'Verdana', sans-serif;
+                margin-bottom: 20px;
+                line-height: 1.6;
             }
+
+            /* 按钮样式 */
             #a {
                 text-decoration: none;
                 margin: 20px auto;
                 display: flex;
-                width: 100px;
-                height: 40px;
+                width: 150px;
+                height: 45px;
                 justify-content: center;
                 align-items: center;
-                background-color: #007bff;
+                background-color: #28a745;
                 color: white;
                 text-align: center;
-                border-radius: 10px;
-                padding: 5px;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: background-color 0.3s ease, transform 0.3s ease;
             }
+
+            /* 按钮 hover 效果 */
             #a:hover {
-                background-color: #0069d9;
+                background-color: #218838;
+                transform: translateY(-2px);
+            }
+
+            /* 添加图标样式 */
+            .pywebio_header::before {
+                content: "\\1F4E6"; /* 信封图标 */
+                font-size: 40px;
+                display: block;
+                margin-bottom: 10px;
+                color: #007bff;
+            }
+
+            /* 弹窗的样式 */
+            /* 遮罩层样式 */
+            .modal {
+                display: block; 
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+            }
+
+            .modal-content {
+                background-color: #f9f9f9; /* 背景色 */
+                border: 1px solid #ddd; /* 边框颜色 */
+                border-radius: 8px; /* 圆角 */
+                padding: 20px; /* 内边距 */
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+                max-width: 500px; /* 最大宽度 */
+                margin: 20px auto; /* 居中显示 */
+                font-family: Arial, sans-serif; /* 字体 */
+                position: relative;
+                top: -100%; /* 初始位置在屏幕上方 */
+                animation: slideIn 0.5s forwards; /* 移入动画 */
+            }
+            .modal-content h2 {
+                display: block;
+                width: 100%;
+                text-align: center;
+                font-size: 20px; /* 标题字体大小 */
+                color: #444; /* 标题颜色 */
+                margin: 0 auto; /* 去除上边距 */
+                margin-bottom: 10px; /* 标题下边距 */
+            }
+            /* 公告内容文本样式 */
+            .modal-content p {
+                font-size: 16px; /* 字体大小 */
+                color: #333; /* 字体颜色 */
+                margin: 0; /* 去除外边距 */
+            }
+            /* 移入动画 */
+            @keyframes slideIn {
+                from {
+                    top: -100%; /* 从屏幕上方开始 */
+                }
+                to {
+                    top: 10%; /* 最终位置 */
+                }
+            }
+
+            /* 移出动画 */
+            @keyframes slideOut {
+                from {
+                    top: 10%;
+                }
+                to {
+                    top: -100%;
+                }
+            }
+
+            /* 关闭按钮的样式 */
+            .close {
+                position: absolute;
+                right: 5%;
+                color: #aaa;
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            /* 隐藏弹窗 */
+            .hidden {
+                display: none;
             }
         </style>
-    ''')
+                ''')
+    
+    # 尝试调用API获取公告内容
+    try:
+        response = requests.get('http://127.0.0.1:5000/api/announcement')  # Flask API URL
+        data = response.json()  # 将返回的JSON数据转换为Python字典
+        is_enabled = data['enable']  # 获取是否开启公告
+        announcement_title = data['title']
+        announcement_message = data['message']
+    except Exception as e:
+        # 如果API调用失败，跳过公告处理
+        print(f"API调用失败: {e}")
+        is_enabled = False  # 设置为False以跳过公告显示
 
+
+       
+    put_html('''
+            <div class="pywebio_header">PIKPAK临时会员邀请程序</div>
+            <div class="km_title">会员奖励次日到账 邀请超50人充不上需要换号 多刷无效<br> 连接超时请刷新重试</div>
+            <a id="a" href="/email">邮箱管理</a>
+            ''')
+    
     put_html('<script>document.title = "PIKPAK临时会员邀请程序";</script>')
-    put_html('<div class="pywebio_header">PIKPAK临时会员邀请程序</div>')
-    put_html('<div class="km_title">随用随充次日会员会掉 邀请超50人充不上需要换号 多刷无效<br> 服务器断开/页面卡住解决方法: 复制网址到微信消息里访问</div>')
-    # 邮箱管理跳转按钮 
-    put_html('<a id="a" href="/email">邮箱管理</a>')
+
+    put_html('''
+            <style>
+                /* 设置卡片背景和样式 */
+                .card {
+                position: relative;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                max-width: 600px;
+                margin: 0 auto;
+                opacity: 0; /* 初始透明度 */
+                animation: fadeIn 1s ease-in-out forwards; /* 动画设置 */
+                }
+                @keyframes fadeIn {
+                    0% {
+                        opacity: 0; /* 起始透明度 */
+                    }
+                    50%{
+                        opacity: 0; /* 起始透明度 */
+                    }
+                    100% {
+                        opacity: 1; /* 最终透明度 */
+                    }
+                }
+                /* 输入框容器样式 */
+                .input-container .form-control {
+                    border: 1px solid #ccc;
+                    border-radius: 8px;
+                    padding: 10px;
+                    font-size: 16px;
+                    transition: border-color 0.3s, box-shadow 0.3s;
+                }
+                /* 输入框聚焦时的效果 */
+                .input-container .form-control:focus {
+                    border-color: #007bff;
+                    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+                    outline: none;
+                }
+
+                /* 标签样式 */
+                .input-container label {
+                    font-weight: 500;
+                    font-size: 14px;
+                    color: #333;
+                    margin-bottom: 6px;
+                    display: block;
+                }
+
+                /* 提示文字样式 */
+                .form-text.text-muted {
+                    font-size: 12px;
+                    color: #666;
+                }
+
+                /* 提交按钮样式 */
+                .btn-primary {
+                    background: linear-gradient(90deg, #4CAF50, #45a049);
+                    border: none;
+                    color: white;
+                    padding: 12px 24px;
+                    font-size: 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: background 0.3s;
+                }
+
+                .btn-primary:hover {
+                    background: linear-gradient(90deg, #45a049, #3e8e41);
+                    color: #000;
+                }
+
+                /* 重置按钮样式 */
+                .btn-warning {
+                    background: linear-gradient(90deg, #f0ad4e, #ec971f);
+                    border: none;
+                    color: white;
+                    padding: 12px 24px;
+                    font-size: 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: background 0.3s;
+                }
+
+                .btn-warning:hover {
+                    background: linear-gradient(90deg, #ec971f, #e78c0b);
+                    color: #000;
+                }
+
+                /* 表单项之间的间距 */
+                .form-group {
+                    margin-bottom: 18px;
+                }
+
+                /* 按钮之间的间距 */
+                .ws-form-submit-btns button {
+                    margin-right: 12px;
+                }
+            </style>
+             ''')
+    if is_enabled:
+        put_html(f'''
+            <!-- 公告弹窗 -->
+                <div id="announcementModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" id="closeModal">&times;</span>
+                        <h2>{announcement_title}</h2>
+                        {announcement_message}
+                    </div>
+                </div>
+                ''')
+        put_html('''
+                <script>
+                    // 获取弹窗和关闭按钮
+                    var modal = document.getElementById("announcementModal");
+                    var modalContent = document.querySelector(".modal-content");
+                    var closeBtn = document.getElementById("closeModal");
+
+                    // 页面加载完成后显示公告弹窗
+                    window.onload = function() {
+                        modal.style.display = "block"; // 强制显示弹窗
+                    };
+
+                    // 获取关闭按钮
+                    var closeModal = document.getElementById("closeModal");
+
+
+                    // 点击弹窗外部区域关闭弹窗
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            // 触发移出动画
+                        modalContent.style.animation = "slideOut 0.5s forwards";
+                        // 等待动画完成后关闭弹窗
+                        setTimeout(function() {
+                            modal.style.display = "none";
+                        }, 100);
+                        }
+                    };
+                    // 关闭按钮点击事件
+                    closeBtn.onclick = function() {
+                        // 触发移出动画
+                        modalContent.style.animation = "slideOut 0.5s forwards";
+                        // 等待动画完成后关闭弹窗
+                        setTimeout(function() {
+                            modal.style.display = "none";
+                        }, 100);
+                    }
+                </script>
+             ''')
+    # 表单输入
     form_data = input_group("", [
         input("请输入你的邀请码6-8位数字:", name="incode", type=TEXT,
               required=True, placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字"),
         input("请输入卡密:", name="card_key", type=TEXT,
               required=True, placeholder="请输入卡密")
-        # input("邀请次数:", name="numberInvitations", type=NUMBER, value=1, required=True, readonly=True,
-        #       placeholder="默认填写1次，不可修改"),
     ])
-
     incode = form_data['incode']
     card_key = form_data['card_key']
-    # numberInvitations = form_data['numberInvitations']
-
+    
     # 验证卡密
     if card_key not in card_keys or card_keys[card_key] <= 0:
         put_text("卡密无效，联系客服")
         return
 
-
+    # 邀请操作界面
     clear()
+
     put_html('''
         <style>
-            .footer {
-                display: none !important;
-            }
-            .pywebio_header {
+            /* 倒计时样式 */
+            #countdown {
                 text-align: center;
-                font-size: 24px;
-                font-weight: bold;
-                margin-bottom: 20px;
+                font-size: 18px;
+                color: #dc3545;
+                margin-top: 20px;
+            }
+
+            /* 邀请结果的样式 */
+            .result-container {
+                text-align: center;
+                font-size: 20px;
+                margin-top: 30px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+            }
+
+            /* 邀请结果 hover 效果 */
+            .result-container:hover {
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             }
         </style>
-    ''')
-    put_html('''
         <div id="countdown" style="text-align: center;">
             正在邀请中...请不要退出页面， <span id="time">60</span> 秒 <br>
             页面倒计时为1秒还未跳转请刷新页面重试一遍
@@ -1209,7 +1548,6 @@ def web_app():
             var countdownTimer = setInterval(function(){
                 if(timeLeft <= 0){
                     clearInterval(countdownTimer);
-                   
                     pywebio.output.put_markdown("## 邀请结果");
                 } else {
                     document.getElementById("time").innerHTML = timeLeft;
@@ -1219,8 +1557,7 @@ def web_app():
         </script>
     ''')
 
-# document.getElementById("countdown").innerHTML = "邀请已结束，稍等...正在处理结果";
-
+    # 执行邀请逻辑
     results = []
     with ThreadPoolExecutor(max_workers=10) as executor:
         # futures = [executor.submit(main, incode) for _ in range(numberInvitations)]
@@ -1230,29 +1567,14 @@ def web_app():
             print(result)
             results.append(result)
 
+    # 显示邀请结果
     clear()
     put_markdown("## 邀请结果")
-    put_html('''
-        <style>
-            .footer {
-                display: none !important;
-            }
-            .pywebio_header {
-                text-align: center;
-                font-size: 24px;
-                font-weight: bold;
-                margin-bottom: 20px;
-            }
-            .result-container {
-                text-align: center;
-                font-size: 18px;
-                margin-top: 20px;
-            }
-        </style>
-    ''')
     for result in results:
-        # put_text(result)
         put_html(f'<div class="result-container">{result}</div>')
+
+
+
 
 
 # 将 PyWebIO 集成到 Flask

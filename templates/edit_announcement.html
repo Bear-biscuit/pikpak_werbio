@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑公告</title>
+    <!-- 引入TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/h19nacwhbhplqghaxpbk3lmpi9ay2ifb8fwrw5rekg5ryhan/tinymce/5/tinymce.min.js"
+        referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#message',  // 将textarea转化为富文本编辑器
+            plugins: 'advlist autolink link image lists charmap print preview hr anchor pagebreak',
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+            height: 300
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            background-color: #e9ecef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .container {
+            margin: 10% auto;
+            width: 90vw;
+            max-width: 600px;
+            background-color: #fff;
+            padding: 2%;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: inline-block;
+            margin: 15px 0 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .tox-tinymce {
+            border-radius: 1% !important;
+            border: 1px solid #ddd !important;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        button {
+            display: block;
+            width: 30%;
+            padding: 2% 4%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5% auto;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #28a745;
+        }
+
+        .back-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .back-button a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>通知设置</h1>
+        <form action="{{ url_for('edit_announcement') }}" method="POST">
+            <!-- 是否启用公告 -->
+            <label for="enable">启用公告:</label>
+            <input type="checkbox" id="enable" name="enable" {% if announcement['enable'] %}checked{% endif %}>
+            <br>
+
+            <!-- 公告标题 -->
+            <label for="title">公告标题:</label>
+            <input type="text" id="title" name="title" value="{{ announcement['title'] }}" required>
+
+            <!-- 公告内容 (HTML富文本) -->
+            <label for="message">公告内容:</label>
+            <textarea id="message" name="message">{{ announcement['message'] }}</textarea>
+
+            <!-- 提交按钮 -->
+            <button type="submit">保存公告</button>
+        </form>
+        <!-- 显示保存成功提示 -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="message {{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- 返回主页按钮 -->
+        <div class="back-button">
+            <a href="{{ url_for('index') }}">返回主页</a>
+        </div>
+    </div>
+</body>
+
+</html>
