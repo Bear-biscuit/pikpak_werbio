@@ -32,6 +32,8 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 可以查看和管理已使用和未使用的邮箱  
 ![image](https://github.com/user-attachments/assets/6d37f883-857a-458b-95a0-e2b1da9f3558)
 ![image](https://github.com/user-attachments/assets/f3628ced-bb93-44b3-8987-4b6f6cebf9aa)
+邮箱测活，会自动删除失效的邮箱
+![image](https://github.com/user-attachments/assets/241518f1-c608-446f-829d-aebd7f5e951e)
 
 ### 添加邮箱页面
 可以手动添加邮箱信息，也可以从下方邮箱卡购买网站中购买邮箱卡，注意是邮箱卡，不要买成邮箱  
