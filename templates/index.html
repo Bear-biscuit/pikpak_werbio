@@ -130,7 +130,7 @@
 <div class="postinon">
     <div class="box">
         <div class="list-title">
-                <span><</span>
+                <span data-id="switch"><</span>
                     
                     <a href="{{ url_for('bulk_add') }}">添加账号</a>
                     <!-- 按需开启 -->
@@ -259,17 +259,19 @@
                     }
                 });
         }
+
         // 更新计时器显示
         function updateCountdown(nextCheckTime) {
             if (countdownInterval) {
                 clearInterval(countdownInterval);
             }
             countdownInterval = setInterval(() => {
-                const now = Math.floor(Date.now() / 1000);
+                const now = Date.now() / 1000;
                 const timeLeft = nextCheckTime - now;
                 if (timeLeft <= 0) {
-                    timerDisplay.textContent = '下次检测: 现在';
+                    timerDisplay.textContent = '下次检测: 正在检测中';
                     clearInterval(countdownInterval);
+                    loadStatus()
                 } else {
                     const minutes = Math.floor(timeLeft / 60);
                     const seconds = parseInt(timeLeft % 60);
@@ -284,7 +286,6 @@
             if (action === 'start') {
                 toggle.disabled = false;
                 statusText.textContent = '检测已启动';
-                loadStatus();
                 fetch('/toggle_detection', {
                     method: 'POST',
                     headers: {
@@ -363,7 +364,7 @@
 
 
         document.documentElement.addEventListener('click', (e) => {
-            if (e.target.tagName === 'SPAN') {
+            if (e.target.dataset.id === 'switch') {
                 if (list.style.animationName === 'on') {
                     list.style.animationName = 'off'
                     span.innerHTML = '<'
