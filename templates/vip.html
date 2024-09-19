@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>PIKPAK临时会员邀请程序</title>
+    <style>
+        /* 移除页面底部 */
+        .footer {
+            display: none !important;
+        }
+
+        /* 页头样式 */
+        .pywebio_header {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 2px;
+        }
+
+        /* 说明文字样式 */
+        .km_title {
+            text-align: center;
+            color: #495057;
+            font-size: 14px;
+            font-family: 'Verdana', sans-serif;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* 按钮样式 */
+        #a {
+            text-decoration: none;
+            margin: 20px auto;
+            display: flex;
+            width: 150px;
+            height: 45px;
+            justify-content: center;
+            align-items: center;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        /* 按钮 hover 效果 */
+        #a:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .pywebio_header::before {
+            content: "\f0e0";
+            /* Font Awesome 信封图标的 Unicode */
+            font-family: "Font Awesome 5 Free";
+            /* 指定字体 */
+            font-weight: 900;
+            /* 必须使用字体的粗体 */
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+
+        /* 弹窗的样式 */
+        /* 遮罩层样式 */
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* 半透明背景 */
+        }
+
+        .modal-content {
+            background-color: #f9f9f9;
+            /* 背景色 */
+            border: 1px solid #ddd;
+            /* 边框颜色 */
+            border-radius: 8px;
+            /* 圆角 */
+            padding: 20px;
+            /* 内边距 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* 阴影效果 */
+            max-width: 500px;
+            /* 最大宽度 */
+            margin: 20px auto;
+            /* 居中显示 */
+            font-family: Arial, sans-serif;
+            /* 字体 */
+            position: relative;
+            top: -100%;
+            /* 初始位置在屏幕上方 */
+            animation: slideIn 0.5s forwards;
+            /* 移入动画 */
+        }
+
+        .modal-content h2 {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 20px;
+            /* 标题字体大小 */
+            color: #444;
+            /* 标题颜色 */
+            margin: 0 auto;
+            /* 去除上边距 */
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9e8e8;
+        }
+
+        /* 公告内容文本样式 */
+        .modal-content p {
+            font-size: 16px;
+            /* 字体大小 */
+            color: #333;
+            /* 字体颜色 */
+            margin: 0;
+            /* 去除外边距 */
+            margin-top: 0.5rem;
+        }
+
+        /* 移入动画 */
+        @keyframes slideIn {
+            from {
+                top: -100%;
+                /* 从屏幕上方开始 */
+            }
+
+            to {
+                top: 10%;
+                /* 最终位置 */
+            }
+        }
+
+        /* 移出动画 */
+        @keyframes slideOut {
+            from {
+                top: 10%;
+            }
+
+            to {
+                top: -100%;
+            }
+        }
+
+        /* 关闭按钮的样式 */
+        .close {
+            position: absolute;
+            right: 5%;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 隐藏弹窗 */
+        .hidden {
+            display: none;
+        }
+    </style>
+    <style>
+        /* 设置卡片背景和样式 */
+        .card {
+            position: relative;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0;
+            /* 初始透明度 */
+            animation: fadeIn 1s ease-in-out forwards;
+            /* 动画设置 */
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                /* 起始透明度 */
+            }
+
+            50% {
+                opacity: 0;
+                /* 起始透明度 */
+            }
+
+            100% {
+                opacity: 1;
+                /* 最终透明度 */
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 输入框容器样式 */
+        .input-container .form-control {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* 输入框聚焦时的效果 */
+        .input-container .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+            outline: none;
+        }
+
+        /* 标签样式 */
+        .input-container label {
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* 提示文字样式 */
+        .form-text.text-muted {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 提交按钮样式 */
+        .btn-primary {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #45a049, #3e8e41);
+            color: #000;
+        }
+
+        /* 重置按钮样式 */
+        .btn-warning {
+            background: linear-gradient(90deg, #f0ad4e, #ec971f);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(90deg, #ec971f, #e78c0b);
+            color: #000;
+        }
+
+        /* 表单项之间的间距 */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        /* 按钮之间的间距 */
+        .ws-form-submit-btns button {
+            margin-right: 12px;
+        }
+        .github-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .github-icon:hover {
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pywebio_header">PIKPAK临时会员邀请</div>
+    <div class="km_title">会员奖励次日到账 邀请超50人充不上需要换号 多刷无效<br> 连接超时请刷新重试</div>
+    <a id="a" href="/email">邮箱管理</a>
+
+    <!-- 公告弹窗 -->
+    {% if is_enabled %}
+    <div id="announcementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>{{ announcement_title }}</h2>
+            {{ announcement_message | safe }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card" style="height: unset; width: unset;">
+        <h5 class="card-header"></h5>
+        <div class="card-body">
+            <form action="/submit" method="POST">
+                <div class="input-container">
+                    <div class="form-group">
+                        <label for="incode-9989">请输入你的邀请码6-8位数字:</label>
+
+                        <input type="text" id="incode-9989" aria-describedby="incode-9989_action_btn"
+                            list="incode-9989-list" class="form-control" name="incode"
+                            placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字" required="required" auto_focus="true">
+                        <datalist id="incode-9989-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="incode-9989_help" class="form-text text-muted"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="card_key-1219">请输入卡密:</label>
+
+                        <input type="text" id="card_key-1219" aria-describedby="card_key-1219_action_btn"
+                            list="card_key-1219-list" class="form-control" name="card_key" placeholder="请输入卡密"
+                            required="required">
+                        <datalist id="card_key-1219-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="card_key-1219_help" class="form-text text-muted"></small>
+                    </div>
+                </div>
+                <div class="ws-form-submit-btns">
+                    <button type="submit" class="btn btn-primary">提交</button>
+                    <button type="reset" class="btn btn-warning">重置</button>
+
+                </div>
+            </form>
+        </div>
+        <!-- GitHub 图标 -->
+        <a href="https://github.com/Bear-biscuit/pikpak_werbio" target="_blank" class="github-icon">
+            <i class="fab fa-github"></i>
+        </a>
+    </div>
+
+    <script>
+        // 公告弹窗逻辑
+        {% if is_enabled %}
+        // 获取弹窗和关闭按钮
+        const modal = document.getElementById("announcementModal");
+        const modalContent = document.querySelector(".modal-content");
+        const closeBtn = document.getElementById("closeModal");
+
+        // 页面加载完成后显示公告弹窗
+        window.onload = function () {
+            modal.style.display = "block"; // 强制显示弹窗
+        };
+
+        // 获取关闭按钮
+        const closeModal = document.getElementById("closeModal");
+
+
+        // 点击弹窗外部区域关闭弹窗
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                // 触发移出动画
+                modalContent.style.animation = "slideOut 0.5s forwards";
+                // 等待动画完成后关闭弹窗
+                setTimeout(function () {
+                    modal.style.display = "none";
+                }, 100);
+            }
+        };
+        // 关闭按钮点击事件
+        closeBtn.onclick = function () {
+            // 触发移出动画
+            modalContent.style.animation = "slideOut 0.5s forwards";
+            // 等待动画完成后关闭弹窗
+            setTimeout(function () {
+                modal.style.display = "none";
+            }, 100);
+        }
+        {% endif %}
+    </script>
+</body>
+
+</html>

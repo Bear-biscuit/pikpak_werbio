@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>reCaptcha 验证</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        iframe {
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #get {
+            background-color: #28a745;
+        }
+        #get:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>reCaptcha 验证</h1>
+        <p><strong style="color:red;">请使用代理访问，否则可能会遇到验证完成无法跳转的情况</strong></p>
+        <p>请点击此<a href="{{ captcha_url }}" target="_blank">链接</a>，完成人机验证，复制验证完成后跳转的页面地址，注意是跳转之后的地址</p>
+        <p>跳转之后的页面长这样↓</p>
+        <a href="https://smms.app/image/yLTnAHZEbc9fChe" target="_blank"><img src="https://s2.loli.net/2024/09/19/yLTnAHZEbc9fChe.png" ></a>
+        <!-- 表单 -->
+        <form action="/captcha_verify" method="POST">
+            <label for="input_url">将复制的链接粘贴到此处</label>
+            <input type="text" id="input_url" name="input_url" required>
+            <button type="submit">提交</button>
+        </form>
+    </div>
+</body>
+</html>

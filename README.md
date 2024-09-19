@@ -3,10 +3,11 @@
 
 # 项目说明
 
-## pikpak会员自动邀请辅助程序
+## pikpak会员~~自动~~邀请程序
+不是打码用不起，而是手动更具性价比()  
 ## 原作者：B站纸鸢的花语
-## 二改作者：非雨 
-GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxianlu/pikpak_werbio)
+倒卖 牡蛎😘~~~
+
 
 ### 注意
 现在邀请新用户后，会有最高24小时的审核期，会员奖励不会立即结算  
@@ -19,8 +20,6 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 ### 代理池  
 代理池项目:[ProxyPoolWithUI](https://github.com/OxOOo/ProxyPoolWithUI?tab=readme-ov-file)  
 ![image](https://github.com/user-attachments/assets/5c3fca09-6fb4-41d1-aeda-d69dc41d296b)
-
-
 
 
 
@@ -63,9 +62,9 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 
 
 
-### 会员共享页面
-只会显示近三天邀请成功的账号  
-注意渲染时的密码是固定的，请确保与会员邀请程序中的密码一致
+### ~~会员共享页面~~
+~~只会显示近三天邀请成功的账号  
+注意渲染时的密码是固定的，请确保与会员邀请程序中的密码一致~~
 ![image](https://github.com/user-attachments/assets/a3fc3c51-cc96-4917-9a9c-ddcec9478553)
 
 
@@ -85,7 +84,7 @@ GitHub：[https://github.com/liuxianlu/pikpak_werbio](https://github.com/liuxian
 ```
 pip install -r requirements.txt
 ```  
-运行 gather.py
+运行 run.py
 ```
-python gather.py
+python run.py
 ```

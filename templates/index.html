@@ -250,7 +250,8 @@
                         toggle.checked = true;
                         statusText.textContent = '检测已启动';
                         intervalInput.value = data.interval / 60; // 显示为分钟
-                        updateCountdown(data.next_check);
+                        
+                        updateCountdown(data.next_check,data.now_check);
                     } else {
                         toggle.checked = false;
                         statusText.textContent = '检测已停止';
@@ -261,15 +262,17 @@
         }
 
         // 更新计时器显示
-        function updateCountdown(nextCheckTime) {
+        function updateCountdown(nextCheckTime,nowCheckTime) {
             if (countdownInterval) {
                 clearInterval(countdownInterval);
             }
+            let now = Math.floor(nowCheckTime);
             countdownInterval = setInterval(() => {
-                const now = Date.now() / 1000;
+                now++
                 const timeLeft = nextCheckTime - now;
-                if (timeLeft <= 0) {
-                    timerDisplay.textContent = '下次检测: 正在检测中';
+
+                 if (timeLeft <= 0) {
+                    timerDisplay.textContent = `正在检测中`;
                     clearInterval(countdownInterval);
                     loadStatus()
                 } else {

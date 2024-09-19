@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import poplib
 import hashlib
+import urllib.parse
 import json
 import random
 import re
@@ -14,19 +15,20 @@ import requests
 import uuid
 import email
 import threading
-from pywebio.input import input_group, input, TEXT
-from pywebio.output import put_text, put_markdown, clear, put_html
-from pywebio import start_server
 # from datetime import datetime
-from pywebio.platform.flask import webio_view
+from urllib.parse import urlparse, parse_qs
 
 app = Flask(__name__)
 # 创建一个自定义日志过滤器
 class RequestFilter(logging.Filter):
     def filter(self, record):
         
+        # 过滤掉包含 '/?app=index' 的日志
         if '/?app=index' in record.getMessage():
-            return False  
+            return False
+        # 过滤掉包含 'GET /get_status' 的日志
+        if 'GET /get_status' in record.getMessage():
+            return False 
         return True  
 
 # 获取Flask默认的日志记录器
@@ -195,7 +197,8 @@ def index():
         write_status({
             'detection_active': False,
             'interval': 600,
-            'next_check': 0
+            'next_check': 0,
+            'now_check': 0
         })
         initialized = True
     emails = read_emails()
@@ -421,7 +424,7 @@ def recent_emails():
                 if timestamp >= three_days_ago:
                     account_info = email.split('----')  # 使用 '----' 分隔账号信息
                     account = account_info[0]  # 获取邮箱部分
-                    fixed_password = "pik123"  # 固定密码 需要和下面邀请部分的密码一致
+                    fixed_password = "Bocchi002b"  # 固定密码 需要和下面邀请部分的密码一致
                     formatted_email = f"{account}----{fixed_password}"
                     recent_emails.append(formatted_email)
             except (ValueError, IndexError):
@@ -500,23 +503,35 @@ def update_file_status(file_path, email, password, status, time):
 def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=10):
     pop3_server = "pop-mail.outlook.com"
     retries = 0
+    print('尝试登录邮箱')
+    
     while retries < max_retries:
         try:
-            mail = poplib.POP3_SSL(pop3_server)
+            print('第', retries, '次尝试获取')  
+            mail = poplib.POP3_SSL(pop3_server, 995)
             mail.user(email_user)
             mail.pass_(email_pass)
+            print('获取邮箱列表')  
+            # 获取邮件列表
             num_messages = len(mail.list()[1])
             for i in range(num_messages):
                 response, lines, octets = mail.retr(i + 1)
                 raw_email = b'\n'.join(lines)
                 code = process_email(raw_email, i + 1, mail)
+                
+                # 如果处理函数返回了 code，立即返回
                 if code:
                     return code
+            
             mail.quit()
+        except poplib.error_proto as e:
+            print(f"POP3 错误: {e}")
         except Exception as e:
-            print(f"发生错误: {e}")
+            print(f"发生错误: {type(e).__name__}: {e}")
+        
         retries += 1
         time.sleep(delay)
+    
     return None
 
 
@@ -664,7 +679,7 @@ def img_jj(e, t, n):
     return {"ca": r(e, t), "f": c(n, t)}
 
 
-def uuid():
+def getuuid():
     return ''.join([random.choice('0123456789abcdef') for _ in range(32)])
 
 
@@ -691,6 +706,44 @@ def get_sign(xid, t):
         md5_hash = md5(md5_hash)
     return md5_hash
 
+
+def md51(input_string):
+    return hashlib.md5(input_string.encode()).hexdigest()
+
+def get_sign1(xid, t):
+    e = [
+        {"alg": "md5", "salt": "KHBJ07an7ROXDoK7Db"},
+        {"alg": "md5", "salt": "G6n399rSWkl7WcQmw5rpQInurc1DkLmLJqE"},
+        {"alg": "md5", "salt": "JZD1A3M4x+jBFN62hkr7VDhkkZxb9g3rWqRZqFAAb"},
+        {"alg": "md5", "salt": "fQnw/AmSlbbI91Ik15gpddGgyU7U"},
+        {"alg": "md5", "salt": "/Dv9JdPYSj3sHiWjouR95NTQff"},
+        {"alg": "md5", "salt": "yGx2zuTjbWENZqecNI+edrQgqmZKP"},
+        {"alg": "md5", "salt": "ljrbSzdHLwbqcRn"},
+        {"alg": "md5", "salt": "lSHAsqCkGDGxQqqwrVu"},
+        {"alg": "md5", "salt": "TsWXI81fD1"},
+        {"alg": "md5", "salt": "vk7hBjawK/rOSrSWajtbMk95nfgf3"}
+    ]
+    
+    md5_hash = f"YvtoWO6GNHiuCl7xundefinedmypikpak.com{xid}{t}"
+    for item in e:
+        md5_hash += item["salt"]
+        md5_hash = md51(md5_hash)
+    
+    # URL 编码
+    encoded_hash = urllib.parse.quote(md5_hash)
+    return encoded_hash
+def get_proxy_ip(proxy):
+    # 通过配置代理访问一个获取IP地址的服务
+    url = 'http://httpbin.org/ip'
+    
+    try:
+        response = requests.get(url, proxies=proxy)
+        # 获取返回的IP地址
+        ip_address = response.json()['origin']
+        return ip_address
+    except Exception as e:
+        return f"Error: {e}"
+    
 # 初始安全验证
 def init(xid, mail,proxy):
     global randint_ip
@@ -743,28 +796,14 @@ def init(xid, mail,proxy):
                 url, json=body, headers=headers,proxies=proxy, timeout=5)
             response_data = response.json()
             print('初始安全验证')
+            # print(response_data)
             return response_data
         except:
             retries += 1
     return '连接超时'
-# 获取token
-def get_new_token(xid, captcha):
-    retries = 0
-    max_retries = 3
-    while retries < max_retries:
-        try:
-            response2 = requests.get(
-                f"https://user.mypikpak.com/credit/v1/report?deviceid={xid}&captcha_token={captcha}&type"
-                f"=pzzlSlider&result=0", proxies=get_proxy(), timeout=5)
 
-            response_data = response2.json()
-            # print('获取验证TOKEN中......')
-            return response_data
-        except:
-            retries += 1
-    return '连接超时'
 # 发送验证码
-def verification(captcha_token, xid, mail, proxy):
+def verification(captcha_token, xid, mail):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/auth/verification'
     body = {
@@ -812,16 +851,17 @@ def verification(captcha_token, xid, mail, proxy):
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers, proxies=proxy,timeout=5)
+                url, json=body, headers=headers ,timeout=5)
             response_data = response.json()
             print('发送验证码')
+            print(response_data)
             return response_data
         except:
             retries += 1
     return '连接超时'
 
 # 验证码结果
-def verify(xid, verification_id, code,proxy):
+def verify(xid, verification_id, code):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/auth/verification/verify'
     body = {
@@ -865,7 +905,7 @@ def verify(xid, verification_id, code,proxy):
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers, timeout=5,proxies=proxy)
+                url, json=body, headers=headers, timeout=5)
             response_data = response.json()
             # 遍历 details 列表，检查是否有包含 '验证码不正确' 的 message
             for detail in response_data.get('details', []):
@@ -877,7 +917,7 @@ def verify(xid, verification_id, code,proxy):
     return '连接超时'
 
 # 验证注册结果
-def signup(xid, mail, code, verification_token,proxy):
+def signup(xid, mail, code, verification_token):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/auth/signup'
     body = {
@@ -885,7 +925,7 @@ def signup(xid, mail, code, verification_token,proxy):
         "verification_code": code,
         "verification_token": verification_token,
         'name': f'qihang{random.randint(1, 1000000000)}vip',
-        "password": "pik123",
+        "password": "Bocchi002b",
         "client_id": "YvtoWO6GNHiuCl7x"
     }
     headers = {
@@ -924,7 +964,7 @@ def signup(xid, mail, code, verification_token,proxy):
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers, timeout=5,proxies=proxy)
+                url, json=body, headers=headers, timeout=5)
             response_data = response.json()
             print('验证注册结果')
             return response_data
@@ -933,7 +973,7 @@ def signup(xid, mail, code, verification_token,proxy):
     return '连接超时'
 
 # 二次安全验证
-def init1(xid, access_token, sub, sign, t,proxy):
+def init1(xid, access_token, sub, sign, t):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/shield/captcha/init'
     body = {
@@ -984,7 +1024,7 @@ def init1(xid, access_token, sub, sign, t,proxy):
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers, timeout=5,proxies=proxy)
+                url, json=body, headers=headers, timeout=5)
             response_data = response.json()
             print('通过二次安全验证')
             return response_data
@@ -993,7 +1033,7 @@ def init1(xid, access_token, sub, sign, t,proxy):
     return '连接超时'
 
 # 确认邀请
-def invite(access_token, captcha_token, xid,proxy):
+def invite(access_token, captcha_token, xid):
     global randint_ip
     url = 'https://api-drive.mypikpak.com/vip/v1/activity/invite'
     body = {
@@ -1030,7 +1070,7 @@ def invite(access_token, captcha_token, xid,proxy):
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers, timeout=5,proxies=proxy)
+                url, json=body, headers=headers, timeout=5)
             response_data = response.json()
             print('确认邀请')
             return response_data
@@ -1039,7 +1079,7 @@ def invite(access_token, captcha_token, xid,proxy):
     return '连接超时'
 
 # 三次安全验证
-def init2(xid, access_token, sub, sign, t,proxy):
+def init2(xid, access_token, sub, sign, t):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/shield/captcha/init'
     body = {
@@ -1090,7 +1130,7 @@ def init2(xid, access_token, sub, sign, t,proxy):
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers, timeout=5,proxies=proxy)
+                url, json=body, headers=headers, timeout=5)
             response_data = response.json()
             print('通过三次安全验证')
             return response_data
@@ -1099,7 +1139,7 @@ def init2(xid, access_token, sub, sign, t,proxy):
     return '连接超时'
 
 # 验证邀请码
-def activation_code(access_token, captcha, xid, in_code,proxy):
+def activation_code(access_token, captcha, xid, in_code):
     global randint_ip
     url = 'https://api-drive.mypikpak.com/vip/v1/order/activation-code'
     body = {
@@ -1135,7 +1175,7 @@ def activation_code(access_token, captcha, xid, in_code,proxy):
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers, timeout=5, proxies=proxy)
+                url, json=body, headers=headers, timeout=5)
             response_data = response.json()
             print('开始填写邀请码')
             # print(f'邀请结果:  {json.dumps(response_data, indent=4)}')
@@ -1169,12 +1209,37 @@ def write_status(data):
     except Exception as e:
         print(f"Error writing status file: {str(e)}")
 
+def update_now_check(new_now_check):
+    try:
+        # 读取现有的 JSON 数据
+        if os.path.getsize(STATUS_FILE) == 0:  # 检查文件是否为空
+            raise ValueError("JSON file is empty")
+        with open(STATUS_FILE, 'r') as f:
+            data = json.load(f)
+         # 获取现有的 'next_check' 和 'interval' 值
+        next_check = data.get('next_check')
+        
+        
+        if(new_now_check < next_check):
+            data['now_check'] = new_now_check
+        else:
+            data['now_check'] = next_check
+        # 写回到文件中
+        with open(STATUS_FILE, 'w') as f:
+            json.dump(data, f)
+        
+        
+    except json.JSONDecodeError:
+        raise ValueError("JSON file contains invalid data")
+    except Exception as e:
+        raise ValueError(f"Error updating 'now_check' in status file: {str(e)}")
 
 
 
 @app.route('/get_status')
 def get_status():
     try:
+        update_now_check(time.time())  # 将 now_check 更新为当前时间戳
         status = read_status()
         return jsonify(status)
     except ValueError as e:
@@ -1276,14 +1341,24 @@ def email_detection_task(interval, file_path):
     while detection_active:
         print("开始邮箱检测...")
         detection_event.clear()
+        # 记录当前检测的开始时间
+        now_check_time = time.time()
+
         check_emails_multithread(read_email_file(file_path), file_path, max_workers)
-        detection_event.set()
+
+        # 检测完成后，设置下一次检测的时间
         next_check_time = time.time() + interval
+
         write_status({
             'detection_active': detection_active,
             'interval': interval,
-            'next_check': next_check_time
+            'next_check': next_check_time,
+            'now_check': now_check_time
         })
+
+        # 设置事件，通知任务已完成
+        detection_event.set()
+
         time.sleep(interval)
 
 
@@ -1300,10 +1375,12 @@ def toggle_detection():
         detection_thread.start()
         # 更新状态文件
         next_check_time = time.time() + interval
+        now_check_time = time.time()
         write_status({
             'detection_active': detection_active,
             'interval': interval,
-            'next_check': next_check_time
+            'next_check': next_check_time,
+            'now_check': now_check_time
         })
         return jsonify({'status': 'started'})
     
@@ -1311,12 +1388,13 @@ def toggle_detection():
         detection_active = False
         detection_event.set()  # 触发事件，通知任务停止
         if detection_thread:
-            detection_thread.join(timeout=5)  # 等待最多5秒
+            detection_thread.join(timeout=10)  # 等待最多10秒
         # 更新状态文件
         write_status({
             'detection_active': detection_active,
             'interval': interval,
-            'next_check': 0  # 停止检测时，下次检查时间设为0
+            'next_check': 0,  # 停止检测时，下次检查时间设为0
+            'now_check': 0
         })
         return jsonify({'status': 'stopped'})
     return jsonify({'status': 'error'})
@@ -1325,11 +1403,11 @@ def toggle_detection():
 invite_success_limit = 1
 invitation_records = {}
 
-def main(incode, card_key, num_invitations=5):
+def main(incode, card_key):
+    if card_key not in card_keys or card_keys[card_key] <= 0:
+        return {'error': "卡密无效，联系客服"}
     now = datetime.datetime.now()
     print("当前日期: ", now)
-    start_time = time.time()
-    success_count = 0
 
     global invitation_records
     current_time = time.time()
@@ -1339,532 +1417,238 @@ def main(incode, card_key, num_invitations=5):
         last_submissions = [
             t for t in last_submissions if current_time - t < 36000] # 10小时
         if len(last_submissions) >= 1:
-            return "24小时内已提交1次，请明日再试。"
+            return {'error': "24小时内已提交1次，请明日再试。"}
         invitation_records[incode] = last_submissions
     else:
         invitation_records[incode] = []
 
-    while success_count < num_invitations:
-        try:
-            xid = uuid()
-            email_users, email_passes = read_and_process_file(file_path)
+    print('生成xid')
+    xid = getuuid()
+    email_users, email_passes = read_and_process_file(file_path)
 
-            if not email_users or not email_passes:
-                return "暂无可用邮箱"
+    if not email_users or not email_passes:
+        return {'error': "暂无可用邮箱"}
 
-            for email_user, email_pass in zip(email_users, email_passes):
-                mail = email_user
-                proxy = get_proxy()
-                print('获取到的代理为:',proxy)
-                # 执行初始化安全验证
-                Init = init(xid, mail, proxy)
-                # captcha_token_info = get_new_token(xid, Init['captcha_token'])
-                if (Init == '连接超时'):
-                     return "连接超时,请刷新重试，多次失败请联系管理员查看代理池"
-                Verification = verification(
-                    Init['captcha_token'], xid, mail, proxy)
-                if (Verification == '连接超时'):
-                     return "连接超时,请刷新重试，多次失败请联系管理员查看代理池"
-                # 获取验证码
-                code = get_email_with_third_party(mail, email_user, email_pass)
+    for email_user, email_pass in zip(email_users, email_passes):
+        mail = email_user
+        proxy = get_proxy()
+        print('获取到的代理为:',proxy)
+        # 执行初始化安全验证
+        Init = init(xid, mail, proxy)
+        
+        if (Init == '连接超时'):
+                return {'error': "连接超时,请刷新重试，多次失败请联系管理员查看代理池"}
+        reCaptcha_url = Init['url'] + '&redirect_uri=https%3A%2F%2Fmypikpak.com%2Floading&state=getcaptcha' + str(round(time.time()*1000))
 
-                if not code:
-                    print(f"无法从邮箱获取验证码: {mail}")
-                    # 获取当前时间
-                    current_timestamp = time.time()
-                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-                    return "邮箱登录/验证失败，请刷新重试"
+        # 保存 mail 和 xid 到会话
+        session['mail'] = mail
+        session['xid'] = xid
+        session['email_user'] = email_user
+        session['email_pass'] = email_pass
+        session['proxy'] = proxy
+        session['incode'] = incode
+        session['card_key'] = card_key
 
-                # 使用验证码完成其他操作
-                verification_response = verify(xid, Verification['verification_id'], code, proxy)
-                if(verification_response == '验证码不正确'):
-                    # 获取当前时间
-                    current_timestamp = time.time()
-                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-                    return '验证码不正确'
-                signup_response = signup(xid, mail, code, verification_response['verification_token'], proxy)
-                current_time = str(int(time.time()))
-                sign = get_sign(xid, current_time)
-                init1_response = init1(xid, signup_response['access_token'], signup_response['sub'], sign, current_time, proxy)
-                invite(signup_response['access_token'],init1_response['captcha_token'], xid, proxy)
-                init2_response = init2(xid, signup_response['access_token'], signup_response['sub'], sign, current_time, proxy)
-                activation = activation_code(signup_response['access_token'], init2_response['captcha_token'], xid, incode, proxy)
-                end_time = time.time()
-                run_time = f'{(end_time - start_time):.2f}'
+        # 返回需要验证的链接给前端
+        return {'captcha_url': reCaptcha_url}
+def main2(captcha_token,incode,card_key,email_user,email_pass,proxy,xid,):
+    start_time = time.time()
+    success_count = 0
+    mail = email_user
 
-                # 检查邀请是否成功
-                # 目前会员邀请之后会有最高24小时的审核，所以会一直显示失败
-                # 如果会员天数等于5 邀请成功
-                if activation.get('add_days') == 5:
-                    result = f"邀请成功 邀请码: {incode} email: {mail} 密码：pik123"
-                    print(result)
-                    success_count += 1
-                    # 邀请时间限制
-                    invitation_records[incode].append(time.time())
-                    # 获取当前时间
-                    current_timestamp = time.time()
-                    # 更新文件中的邮箱和密码状态 添加时间
-                    update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
-                    # 更新卡密使用次数
-                    card_keys[card_key] -= 1
-                    save_card_keys(card_keys)  # 保存更新后的卡密信息
-                    return f"邀请成功: {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123"
-                # 如果会员天数等于0 邀请成功(待定)
-                elif activation.get('add_days') == 0:
-                    result = f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
-                    print(result)
-                    success_count += 1
-                    # 邀请时间限制
-                    invitation_records[incode].append(time.time())
-                    # 获取当前时间
-                    current_timestamp = time.time()
-                    # 更新文件中的邮箱和密码状态 添加时间
-                    update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
-                    # 更新卡密使用次数
-                    card_keys[card_key] -= 1
-                    save_card_keys(card_keys)  # 保存更新后的卡密信息
-                    return f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br> 邮箱: {mail} <br> 密码: pik123 <br>请重新打开邀请页面，查看邀请记录是否显示‘待定’"
-                else:
-                    result = f"未知情况: {activation}"
-                    print(result)
-                    # 获取当前时间
-                    current_timestamp = time.time()
-                    update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-                    return result
+    Verification = verification(captcha_token, xid, mail)
+    if 'error' in Verification.keys():
+        return {'error':'安全验证失败，请确定复制的链接是跳转之后的链接<br>或者请尝试更换浏览器<br>电脑推荐使用edge游览器<br>手机推荐使用X浏览器'}
+    # 获取验证码
+    code = get_email_with_third_party(mail, email_user, email_pass)
 
-        except Exception as e:
-            # 检查异常信息并设置结果
-            if "cannot unpack non-iterable NoneType object" in str(e):
-                result = "异常: 临时邮箱暂没货，等待补货 预计1小时恢复"
-            elif "add_days" in str(e):
-                result = f"异常: {e} 检查邀请码是否有效 程序出错"
-            elif 'captcha_token' in str(e):
-                result = f"异常: {e} 临时邮箱暂没货，等待补货 预计1小时恢复"
-            else:
-                result = f'异常重试... {e}'
-            print(result)
-            return result
+    if not code:
+        print(f"无法从邮箱获取验证码: {mail}")
+        # 获取当前时间
+        current_timestamp = time.time()
+        update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+        return {'error': "邮箱登录/验证失败，请刷新重试"}
 
-# html页面
-from pywebio.output import put_html, clear, put_markdown
-from pywebio.session import run_js
-from concurrent.futures import ThreadPoolExecutor
+    # 使用验证码完成其他操作
+    verification_response = verify(xid, Verification['verification_id'], code)
+    if(verification_response == '验证码不正确'):
+        # 获取当前时间
+        current_timestamp = time.time()
+        update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+        return {'error': "验证码不正确"}
+    signup_response = signup(xid, mail, code, verification_response['verification_token'])
+    current_time = str(int(time.time()))
+    sign = get_sign(xid, current_time)
+    init1_response = init1(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
+    invite(signup_response['access_token'],init1_response['captcha_token'], xid)
+    init2_response = init2(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
+    activation = activation_code(signup_response['access_token'], init2_response['captcha_token'], xid, incode)
+    end_time = time.time()
+    run_time = f'{(end_time - start_time):.2f}'
 
-from pywebio.output import put_html, clear, put_markdown, toast
-from pywebio.session import eval_js
-from concurrent.futures import ThreadPoolExecutor
+    # 检查邀请是否成功
+    # 目前会员邀请之后会有最高24小时的审核，所以会一直显示失败
+    # 如果会员天数等于5 邀请成功
+    if activation.get('add_days') == 5:
+        result = f"邀请成功 邀请码: {incode} email: {mail} 密码：Bocchi002b"
+        print(result)
+        success_count += 1
+        # 邀请时间限制
+        invitation_records[incode].append(time.time())
+        # 获取当前时间
+        current_timestamp = time.time()
+        # 更新文件中的邮箱和密码状态 添加时间
+        update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
+        # 更新卡密使用次数
+        card_keys[card_key] -= 1
+        save_card_keys(card_keys)  # 保存更新后的卡密信息
+        return {
+        'message': f"邀请成功: {incode} 运行时间: {run_time}秒",
+        'email': mail,
+        'password': 'Bocchi002b'
+        }
+    # 如果会员天数等于0 邀请成功(待定)
+    elif activation.get('add_days') == 0:
+        result = f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
+        print(result)
+        success_count += 1
+        # 邀请时间限制
+        # invitation_records[incode].append(time.time())
+        # 获取当前时间
+        current_timestamp = time.time()
+        # 更新文件中的邮箱和密码状态 添加时间
+        update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
+        # 更新卡密使用次数
+        card_keys[card_key] -= 1
+        save_card_keys(card_keys)  # 保存更新后的卡密信息
+        return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
+    else:
+        result = f"未知情况: {activation}"
+        print(result)
+        # 获取当前时间
+        current_timestamp = time.time()
+        update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+        return {'error': "未知情况"}
 
 # html页面
-def web_app():
-    put_html('''
-            <style>
-            /* 移除页面底部 */
-            .footer {
-                display: none !important;
-            }
+@app.route('/')
+def vip():
+    is_enabled = False
+    announcement_title = ""
+    announcement_message = ""
 
-            /* 页头样式 */
-            .pywebio_header {
-                text-align: center;
-                font-size: 26px;
-                font-weight: bold;
-                margin-bottom: 30px;
-                color: #333;
-                font-family: 'Arial', sans-serif;
-                letter-spacing: 2px;
-            }
-
-            /* 说明文字样式 */
-            .km_title {
-                text-align: center;
-                color: #495057;
-                font-size: 14px;
-                font-family: 'Verdana', sans-serif;
-                margin-bottom: 20px;
-                line-height: 1.6;
-            }
-
-            /* 按钮样式 */
-            #a {
-                text-decoration: none;
-                margin: 20px auto;
-                display: flex;
-                width: 150px;
-                height: 45px;
-                justify-content: center;
-                align-items: center;
-                background-color: #28a745;
-                color: white;
-                text-align: center;
-                border-radius: 8px;
-                font-size: 16px;
-                transition: background-color 0.3s ease, transform 0.3s ease;
-            }
-
-            /* 按钮 hover 效果 */
-            #a:hover {
-                background-color: #218838;
-                transform: translateY(-2px);
-            }
-
-            /* 添加图标样式 */
-            .pywebio_header::before {
-                content: "\\1F4E6"; /* 信封图标 */
-                font-size: 40px;
-                display: block;
-                margin-bottom: 10px;
-                color: #007bff;
-            }
-
-            /* 弹窗的样式 */
-            /* 遮罩层样式 */
-            .modal {
-                display: block; 
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
-            }
-
-            .modal-content {
-                background-color: #f9f9f9; /* 背景色 */
-                border: 1px solid #ddd; /* 边框颜色 */
-                border-radius: 8px; /* 圆角 */
-                padding: 20px; /* 内边距 */
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-                max-width: 500px; /* 最大宽度 */
-                margin: 20px auto; /* 居中显示 */
-                font-family: Arial, sans-serif; /* 字体 */
-                position: relative;
-                top: -100%; /* 初始位置在屏幕上方 */
-                animation: slideIn 0.5s forwards; /* 移入动画 */
-            }
-            .modal-content h2 {
-                display: block;
-                width: 100%;
-                text-align: center;
-                font-size: 20px; /* 标题字体大小 */
-                color: #444; /* 标题颜色 */
-                margin: 0 auto; /* 去除上边距 */
-                margin-bottom: 10px; /* 标题下边距 */
-            }
-            /* 公告内容文本样式 */
-            .modal-content p {
-                font-size: 16px; /* 字体大小 */
-                color: #333; /* 字体颜色 */
-                margin: 0; /* 去除外边距 */
-            }
-            /* 移入动画 */
-            @keyframes slideIn {
-                from {
-                    top: -100%; /* 从屏幕上方开始 */
-                }
-                to {
-                    top: 10%; /* 最终位置 */
-                }
-            }
-
-            /* 移出动画 */
-            @keyframes slideOut {
-                from {
-                    top: 10%;
-                }
-                to {
-                    top: -100%;
-                }
-            }
-
-            /* 关闭按钮的样式 */
-            .close {
-                position: absolute;
-                right: 5%;
-                color: #aaa;
-                font-size: 28px;
-                font-weight: bold;
-            }
-
-            .close:hover,
-            .close:focus {
-                color: black;
-                text-decoration: none;
-                cursor: pointer;
-            }
-
-            /* 隐藏弹窗 */
-            .hidden {
-                display: none;
-            }
-        </style>
-                ''')
-    
     # 尝试调用API获取公告内容
     try:
-        # 请求Flask API获取启用的公告（后端需要支持启用公告的API）
-        response = requests.get('http://127.0.0.1:5000/api/announcement/active')  # 假设有一个返回启用公告的API
+        # 请求Flask API获取启用的公告（假设后端API是这个地址）
+        response = requests.get('http://127.0.0.1:5000/api/announcement/active')
         response.raise_for_status()  # 检查是否有HTTP错误
         data = response.json()  # 将返回的JSON数据转换为Python字典
-        
+
         if data.get('error'):
             print("未找到启用的公告")
-            return None
-
-        is_enabled = data['enable']  # 获取是否开启公告
-        announcement_title = data['title']
-        announcement_message = data['message']
+        else:
+            is_enabled = data['enable']  # 获取是否开启公告
+            announcement_title = data['title']
+            announcement_message = data['message']
 
     except requests.exceptions.RequestException as e:
-        # 如果API调用失败，打印错误信息并跳过公告处理
         print(f"API调用失败: {e}")
-        is_enabled = False  # 设置为False以跳过公告显示
+
+    # 渲染网页模板，传递公告状态和内容
+    return render_template(
+        'vip.html',
+        is_enabled=is_enabled,
+        announcement_title=announcement_title,
+        announcement_message=announcement_message
+    )
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    incode = request.form.get('incode')
+    card_key = request.form.get('card_key')
+
+    session['incode'] = incode
+    session['card_key'] = card_key
+
+    return redirect(url_for('waiting'))
 
 
-       
-    put_html('''
-            <div class="pywebio_header">PIKPAK临时会员邀请程序</div>
-            <div class="km_title">会员奖励次日到账 邀请超50人充不上需要换号 多刷无效<br> 连接超时请刷新重试</div>
-            <a id="a" href="/email">邮箱管理</a>
-            ''')
+
+@app.route('/process', methods=['POST'])
+def process():
+    incode = session.get('incode')
+    card_key = session.get('card_key')
+
+    # 调用主逻辑，获取结果
+    result = main(incode, card_key)
+
+    # 检查是否有错误
+    if 'error' in result:
+        return jsonify({'redirect': url_for('error', error_message=result['error'])})
+
+    if result.get('captcha_url'):
+        return jsonify({'redirect': url_for('captcha', url=result['captcha_url'])})
+
+    # 成功则返回结果页面的URL
+    return jsonify({'redirect': url_for('error', error_message='未知错误')})
+
+@app.route('/captcha')
+def captcha():
+    # 获取 reCaptcha 的 URL
+    captcha_url = request.args.get('url')
+    return render_template('captcha.html', captcha_url=captcha_url)
+
+@app.route('/captcha_verify', methods=['POST'])
+def captcha_verify():
+    input_url = request.form.get('input_url')
+
+    session['input_url'] = input_url
+
+    # 渲染等待页面并告诉它是验证码验证的逻辑
+    return render_template('waiting.html', captcha_verify=True)
+
+
+@app.route('/process_captcha', methods=['POST'])
+def process_captcha():
+    # 获取session中的数据
+    input_url = session.get('input_url')
+    parsed_url = urlparse(input_url)
+    query_params = parse_qs(parsed_url.query)
+    captcha_token = query_params.get('captcha_token', [''])[0]
+
+    xid = session.get('xid')
+    email_user = session.get('email_user')
+    email_pass = session.get('email_pass')
+    proxy = session.get('proxy')
+    incode = session.get('incode')
+    card_key = session.get('card_key')
+
+    # 继续主逻辑
+    result = main2(captcha_token, incode, card_key, email_user, email_pass, proxy, xid)
+
+    # 返回处理结果，重定向到相应页面
+    if 'error' in result:
+        return jsonify({'redirect': url_for('error', error_message=result['error'])})
     
-    put_html('<script>document.title = "PIKPAK临时会员邀请程序";</script>')
-
-    put_html('''
-            <style>
-                /* 设置卡片背景和样式 */
-                .card {
-                position: relative;
-                background-color: #ffffff;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                max-width: 600px;
-                margin: 0 auto;
-                opacity: 0; /* 初始透明度 */
-                animation: fadeIn 1s ease-in-out forwards; /* 动画设置 */
-                }
-                @keyframes fadeIn {
-                    0% {
-                        opacity: 0; /* 起始透明度 */
-                    }
-                    50%{
-                        opacity: 0; /* 起始透明度 */
-                    }
-                    100% {
-                        opacity: 1; /* 最终透明度 */
-                    }
-                }
-                /* 输入框容器样式 */
-                .input-container .form-control {
-                    border: 1px solid #ccc;
-                    border-radius: 8px;
-                    padding: 10px;
-                    font-size: 16px;
-                    transition: border-color 0.3s, box-shadow 0.3s;
-                }
-                /* 输入框聚焦时的效果 */
-                .input-container .form-control:focus {
-                    border-color: #007bff;
-                    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-                    outline: none;
-                }
-
-                /* 标签样式 */
-                .input-container label {
-                    font-weight: 500;
-                    font-size: 14px;
-                    color: #333;
-                    margin-bottom: 6px;
-                    display: block;
-                }
-
-                /* 提示文字样式 */
-                .form-text.text-muted {
-                    font-size: 12px;
-                    color: #666;
-                }
-
-                /* 提交按钮样式 */
-                .btn-primary {
-                    background: linear-gradient(90deg, #4CAF50, #45a049);
-                    border: none;
-                    color: white;
-                    padding: 12px 24px;
-                    font-size: 16px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    transition: background 0.3s;
-                }
-
-                .btn-primary:hover {
-                    background: linear-gradient(90deg, #45a049, #3e8e41);
-                    color: #000;
-                }
-
-                /* 重置按钮样式 */
-                .btn-warning {
-                    background: linear-gradient(90deg, #f0ad4e, #ec971f);
-                    border: none;
-                    color: white;
-                    padding: 12px 24px;
-                    font-size: 16px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    transition: background 0.3s;
-                }
-
-                .btn-warning:hover {
-                    background: linear-gradient(90deg, #ec971f, #e78c0b);
-                    color: #000;
-                }
-
-                /* 表单项之间的间距 */
-                .form-group {
-                    margin-bottom: 18px;
-                }
-
-                /* 按钮之间的间距 */
-                .ws-form-submit-btns button {
-                    margin-right: 12px;
-                }
-            </style>
-             ''')
-    if is_enabled:
-        put_html(f'''
-            <!-- 公告弹窗 -->
-                <div id="announcementModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" id="closeModal">&times;</span>
-                        <h2>{announcement_title}</h2>
-                        {announcement_message}
-                    </div>
-                </div>
-                ''')
-        put_html('''
-                <script>
-                    // 获取弹窗和关闭按钮
-                    var modal = document.getElementById("announcementModal");
-                    var modalContent = document.querySelector(".modal-content");
-                    var closeBtn = document.getElementById("closeModal");
-
-                    // 页面加载完成后显示公告弹窗
-                    window.onload = function() {
-                        modal.style.display = "block"; // 强制显示弹窗
-                    };
-
-                    // 获取关闭按钮
-                    var closeModal = document.getElementById("closeModal");
-
-
-                    // 点击弹窗外部区域关闭弹窗
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            // 触发移出动画
-                        modalContent.style.animation = "slideOut 0.5s forwards";
-                        // 等待动画完成后关闭弹窗
-                        setTimeout(function() {
-                            modal.style.display = "none";
-                        }, 100);
-                        }
-                    };
-                    // 关闭按钮点击事件
-                    closeBtn.onclick = function() {
-                        // 触发移出动画
-                        modalContent.style.animation = "slideOut 0.5s forwards";
-                        // 等待动画完成后关闭弹窗
-                        setTimeout(function() {
-                            modal.style.display = "none";
-                        }, 100);
-                    }
-                </script>
-             ''')
-    # 表单输入
-    form_data = input_group("", [
-        input("请输入你的邀请码6-8位数字:", name="incode", type=TEXT,
-              required=True, placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字"),
-        input("请输入卡密:", name="card_key", type=TEXT,
-              required=True, placeholder="请输入卡密")
-    ])
-    incode = form_data['incode']
-    card_key = form_data['card_key']
-    
-    # 验证卡密
-    if card_key not in card_keys or card_keys[card_key] <= 0:
-        put_text("卡密无效，联系客服")
-        return
-
-    # 邀请操作界面
-    clear()
-
-    put_html('''
-        <style>
-            /* 倒计时样式 */
-            #countdown {
-                text-align: center;
-                font-size: 18px;
-                color: #dc3545;
-                margin-top: 20px;
-            }
-
-            /* 邀请结果的样式 */
-            .result-container {
-                text-align: center;
-                font-size: 20px;
-                margin-top: 30px;
-                padding: 10px;
-                background-color: #f8f9fa;
-                border-radius: 8px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                transition: all 0.3s ease;
-            }
-
-            /* 邀请结果 hover 效果 */
-            .result-container:hover {
-                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-            }
-        </style>
-        <div id="countdown" style="text-align: center;">
-            正在邀请中...请不要退出页面， <span id="time">60</span> 秒 <br>
-            页面倒计时为1秒还未跳转请刷新页面重试一遍
-        </div>
-        <script>
-            var timeLeft = 60;
-            var countdownTimer = setInterval(function(){
-                if(timeLeft <= 0){
-                    clearInterval(countdownTimer);
-                    pywebio.output.put_markdown("## 邀请结果");
-                } else {
-                    document.getElementById("time").innerHTML = timeLeft;
-                }
-                timeLeft -= 1;
-            }, 1000);
-        </script>
-    ''')
-
-    # 执行邀请逻辑
-    results = []
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        # futures = [executor.submit(main, incode) for _ in range(numberInvitations)]
-        futures = [executor.submit(main, incode, card_key) for _ in range(1)]
-        for future in futures:
-            result = future.result()
-            print(result)
-            results.append(result)
-
-    # 显示邀请结果
-    clear()
-    put_markdown("## 邀请结果")
-    for result in results:
-        put_html(f'<div class="result-container">{result}</div>')
+    return jsonify({'redirect': url_for('result', result_message=result['message'])})
 
 
 
+@app.route('/waiting')
+def waiting():
+    return render_template('waiting.html')
+
+@app.route('/result')
+def result():
+    result_message = request.args.get('result_message')
+    return render_template('result.html', result_message=result_message)
+
+@app.route('/error')
+def error():
+    error_message = request.args.get('error_message')
+    return render_template('error.html', error_message=error_message)
 
 
-# 将 PyWebIO 集成到 Flask
-app.add_url_rule('/', 'pywebio', webio_view(web_app), methods=['GET', 'POST', 'OPTIONS'])
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
