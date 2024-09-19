@@ -1513,7 +1513,7 @@ def main2(captcha_token,incode,card_key,email_user,email_pass,proxy,xid,):
         print(result)
         success_count += 1
         # 邀请时间限制
-        # invitation_records[incode].append(time.time())
+        invitation_records[incode].append(time.time())
         # 获取当前时间
         current_timestamp = time.time()
         # 更新文件中的邮箱和密码状态 添加时间
