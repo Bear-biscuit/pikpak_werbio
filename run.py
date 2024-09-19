@@ -1502,11 +1502,7 @@ def main2(captcha_token,incode,card_key,email_user,email_pass,proxy,xid,):
         # 更新卡密使用次数
         card_keys[card_key] -= 1
         save_card_keys(card_keys)  # 保存更新后的卡密信息
-        return {
-        'message': f"邀请成功: {incode} 运行时间: {run_time}秒",
-        'email': mail,
-        'password': 'Bocchi002b'
-        }
+        return {'message': f"邀请成功: {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
     # 如果会员天数等于0 邀请成功(待定)
     elif activation.get('add_days') == 0:
         result = f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
