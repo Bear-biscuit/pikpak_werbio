@@ -504,7 +504,7 @@ def update_file_status(file_path, email, password, status, time):
         print("更新文件状态失败:", e)
 
 # 纸鸢邮件api
-def get_verification_code(email, password):
+def get_verification_code(email, password, retries=1, max_retries=6):
     url = "https://paperkiteidleplus.top/document/pikpak_invite/pop3.php"
 
     payload = {
@@ -512,22 +512,28 @@ def get_verification_code(email, password):
         "password": password
     }
     headers = {"content-type": "application/json"}
-    max_retries = 6
-    retries = 1
+    
     print('尝试登录邮箱')
-
     response = requests.request("POST", url, json=payload, headers=headers)
 
     print('第', retries, '次尝试获取')  
-    res_json = json.loads(response.text)
-    if "verification_code" in res_json.keys():
+    try:
+        res_json = response.json()
+    except json.JSONDecodeError:
+        print("解析响应JSON失败")
+        return None
+
+    if "verification_code" in res_json:
         print('查询到验证码:', res_json['verification_code'])
         return res_json['verification_code']
     else:
-        retries +=1
-        if retries < max_retries:
-            return get_verification_code(email, password)
-        else: return None
+        retries += 1
+        if retries <= max_retries:
+            print('未找到验证码，进行第', retries, '次重试')
+            return get_verification_code(email, password, retries, max_retries)
+        else:
+            print('已达最大重试次数，放弃操作')
+            return '超时'
 
 # POP微软邮箱登录
 def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=10):
@@ -1535,7 +1541,7 @@ def main(incode, card_key, rtc_token, key):
             # 获取验证码
             code = get_verification_code(email_user, email_pass)
 
-            if not code:
+            if (code == '超时'):
                 print(f"无法从邮箱获取验证码: {mail}")
                 # 获取当前时间
                 current_timestamp = time.time()
