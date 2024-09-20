@@ -1490,13 +1490,10 @@ def main(incode, card_key, rtc_token, key):
     current_time = time.time()
     # 检查是否有这个邀请码的记录
     if incode in invitation_records:
-        print('if1')
         # 获取之前的提交时间
         last_submissions = invitation_records[incode]
-        print('if2')
         # 过滤出在10小时内的提交记录
         last_submissions = [t for t in last_submissions if current_time - t < 36000]  # 10小时
-        print(last_submissions)
         # 如果已经有提交记录，并且在10小时内，就返回错误
         if len(last_submissions) >= 1:
             return {'error': "24小时内已提交1次，请明日再试。"}
