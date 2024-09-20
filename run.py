@@ -173,7 +173,7 @@ def login():
         
         # 简单验证，用户名和密码硬编码为 'admin' 和 'password'
         # 请自行更改账号密码
-        if username == 'bocchi' and password == 'cyh031020':
+        if username == 'admin' and password == 'password':
             session['logged_in'] = True
             flash('登录成功！', 'success')
             return redirect(url_for('index'))
@@ -618,7 +618,7 @@ def wxpusher(new_email, password, invitation_code):
 # 动态代理
 def get_proxy():
     # 请更改为你自己的代理池地址
-    proxy_uri = requests.get('https://proxy.bocchi2b.top/fetch_random').text
+    proxy_uri = requests.get('http://127.0.0.1/fetch_random').text
     
     if len(proxy_uri) == 0:
         proxies = {}
