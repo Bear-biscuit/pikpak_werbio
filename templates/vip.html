@@ -362,7 +362,7 @@
 
                         <input type="text" id="key-646173" aria-describedby="key-646173_action_btn"
                             list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
-                            required="required">
+                            required="required" autocomplete="on">
                         <datalist id="key-646173-list">
 
                         </datalist>
@@ -400,6 +400,14 @@
     </div>
 
     <script>
+        document.querySelector('form').addEventListener('submit', function(event) {
+            let rtcToken = document.getElementById('rtc_token-71242').value;
+            if (!rtcToken) {
+                alert('rtc_token 为空，请等待填充或刷新页面。');
+                event.preventDefault(); // 阻止表单提交
+            }
+        })
+
         document.querySelector('#rtc_token-71242').value = localStorage.getItem('rtc_token')
         // 公告弹窗逻辑
         {% if is_enabled %}
