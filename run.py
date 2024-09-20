@@ -1567,30 +1567,11 @@ def main(incode, card_key, rtc_token, key):
             invite(signup_response['access_token'],init1_response['captcha_token'], xid)
             init2_response = init2(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
             activation = activation_code(signup_response['access_token'], init2_response['captcha_token'], xid, incode)
+            print(activation)
             end_time = time.time()
             run_time = f'{(end_time - start_time):.2f}'
-
-            # 检查邀请是否成功
-            # 目前会员邀请之后会有最高24小时的审核，所以会一直显示失败
-            # 如果会员天数等于5 邀请成功
-            if activation.get('add_days') == 5:
-                result = f"邀请成功 邀请码: {incode} email: {mail} 密码：Bocchi002b"
-                print(result)
-                success_count += 1
-                # 邀请时间限制
-                invitation_records[incode].append(time.time())
-                # 获取当前时间
-                current_timestamp = time.time()
-                # 更新文件中的邮箱和密码状态 添加时间
-                update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
-                # 更新卡密使用次数
-                card_keys[card_key] -= 1
-                save_card_keys(card_keys)  # 保存更新后的卡密信息
-                return {'message': f"邀请成功: {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
-            # 如果会员天数等于0 邀请成功(待定)
-            elif activation.get('add_days') == 0:
-                result = f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
-                print(result)
+            if activation.get('add_days') == 0:
+                print(f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’')
                 success_count += 1
                 # 邀请时间限制
                 invitation_records[incode].append(time.time())
@@ -1603,12 +1584,11 @@ def main(incode, card_key, rtc_token, key):
                 save_card_keys(card_keys)  # 保存更新后的卡密信息
                 return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
             else:
-                result = f"未知情况: {activation}"
-                print(result)
+                print(f"未知情况: {activation}")
                 # 获取当前时间
                 current_timestamp = time.time()
                 update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-                return {'error': "未知情况"}
+                return {'error': f"未知情况{activation}"}
     except:
         return {'error': "运行出错，请稍后重试"}
 
