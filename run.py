@@ -856,7 +856,7 @@ def getSign(captchaCode, rtc_token):
 
 # 获取token
 
-def report(xid, captcha_token, google_token, request_id, sign,rtc_token,referer,proxy):
+def report(xid, captcha_token, google_token, request_id, sign,rtc_token,referer):
     url = "https://user.mypikpak.com/credit/v1/report"
 
     querystring = {"deviceid": xid,
@@ -872,7 +872,7 @@ def report(xid, captcha_token, google_token, request_id, sign,rtc_token,referer,
     print('获取token')
     while retries < max_retries:
         try:
-            response2 =  requests.request("GET", url, params=querystring,proxies=proxy,timeout=5)
+            response2 =  requests.request("GET", url, params=querystring,timeout=5)
 
             response_data = response2.json()
             print(response_data)
@@ -1531,7 +1531,7 @@ def main(incode, card_key, rtc_token, key):
                 request_id = signGet['data']['request_id']
                 rtc_token = signGet['data']['rtc_token']
                 captoken = captcha_token
-                captcha_token = report(xid, captoken, google_token,request_id,sign,rtc_token,proxy)['captcha_token']
+                captcha_token = report(xid, captoken, google_token,request_id,sign,rtc_token)['captcha_token']
             Verification = verification(captcha_token, xid, mail)
             if(Verification == '连接超时'):
                 return {'error':'发送验证码超时'}
