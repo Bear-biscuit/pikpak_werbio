@@ -13,7 +13,8 @@
 ![image](https://github.com/user-attachments/assets/29f795d0-bc14-48a7-884b-293c2701a613)
 
 ### 会员邀请主程序
-![image](https://github.com/user-attachments/assets/d76b6a18-b12d-42d3-9540-912ffa68f200)
+![image](https://github.com/user-attachments/assets/74b21d70-e200-4783-8e96-75f581e1f8ff)  
+
 
 
 ### 代理池  
