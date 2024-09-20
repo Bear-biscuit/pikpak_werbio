@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>PIKPAK临时会员邀请程序</title>
+    <script src="{{ url_for('static', filename='rtc_token.js') }}"></script>
     <style>
         /* 移除页面底部 */
         .footer {
@@ -356,6 +357,34 @@
 
                         <small id="card_key-1219_help" class="form-text text-muted"></small>
                     </div>
+                    <div class="form-group">
+                        <label for="key-646173">打码平台密钥(<a href="https://yescaptcha.com/i/7JCOnq">yescaptcha</a>)</label>
+
+                        <input type="text" id="key-646173" aria-describedby="key-646173_action_btn"
+                            list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
+                            required="required">
+                        <datalist id="key-646173-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="key-646173_help" class="form-text text-muted"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="rtc_token-71242">请等待rtc_token自动填充:</label>
+
+                        <input type="text" readonly id="rtc_token-71242" aria-describedby="rtc_token-71242_action_btn"
+                            list="rtc_token-71242-list" class="form-control" name="rtc_token" placeholder="长时间没有填充就刷新页面"
+                            required="required">
+                        <datalist id="rtc_token-71242-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="rtc_token-71242_help" class="form-text text-muted"></small>
+                    </div>
                 </div>
                 <div class="ws-form-submit-btns">
                     <button type="submit" class="btn btn-primary">提交</button>
@@ -371,6 +400,7 @@
     </div>
 
     <script>
+        document.querySelector('#rtc_token-71242').value = localStorage.getItem('rtc_token')
         // 公告弹窗逻辑
         {% if is_enabled %}
         // 获取弹窗和关闭按钮

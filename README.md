@@ -3,8 +3,8 @@
 
 # 项目说明
 
-## pikpak会员~~自动~~邀请程序
-不是打码用不起，而是手动更具性价比()  
+## pikpak会员自动邀请程序  
+
 ## 原作者：B站纸鸢的花语
 倒卖 牡蛎😘~~~
 
@@ -20,7 +20,6 @@
 ### 代理池  
 代理池项目:[ProxyPoolWithUI](https://github.com/OxOOo/ProxyPoolWithUI?tab=readme-ov-file)  
 ![image](https://github.com/user-attachments/assets/5c3fca09-6fb4-41d1-aeda-d69dc41d296b)
-
 
 
 ### 登录页面

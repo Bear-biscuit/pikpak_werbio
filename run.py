@@ -15,7 +15,11 @@ import requests
 import uuid
 import email
 import threading
+from pywebio.input import input_group, input, TEXT
+from pywebio.output import put_text, put_markdown, clear, put_html
+from pywebio import start_server
 # from datetime import datetime
+from pywebio.platform.flask import webio_view
 from urllib.parse import urlparse, parse_qs
 
 app = Flask(__name__)
@@ -424,7 +428,7 @@ def recent_emails():
                 if timestamp >= three_days_ago:
                     account_info = email.split('----')  # 使用 '----' 分隔账号信息
                     account = account_info[0]  # 获取邮箱部分
-                    fixed_password = "Bocchi002b"  # 固定密码 需要和下面邀请部分的密码一致
+                    fixed_password = "pik123"  # 固定密码 需要和下面邀请部分的密码一致
                     formatted_email = f"{account}----{fixed_password}"
                     recent_emails.append(formatted_email)
             except (ValueError, IndexError):
@@ -707,45 +711,8 @@ def get_sign(xid, t):
     return md5_hash
 
 
-def md51(input_string):
-    return hashlib.md5(input_string.encode()).hexdigest()
-
-def get_sign1(xid, t):
-    e = [
-        {"alg": "md5", "salt": "KHBJ07an7ROXDoK7Db"},
-        {"alg": "md5", "salt": "G6n399rSWkl7WcQmw5rpQInurc1DkLmLJqE"},
-        {"alg": "md5", "salt": "JZD1A3M4x+jBFN62hkr7VDhkkZxb9g3rWqRZqFAAb"},
-        {"alg": "md5", "salt": "fQnw/AmSlbbI91Ik15gpddGgyU7U"},
-        {"alg": "md5", "salt": "/Dv9JdPYSj3sHiWjouR95NTQff"},
-        {"alg": "md5", "salt": "yGx2zuTjbWENZqecNI+edrQgqmZKP"},
-        {"alg": "md5", "salt": "ljrbSzdHLwbqcRn"},
-        {"alg": "md5", "salt": "lSHAsqCkGDGxQqqwrVu"},
-        {"alg": "md5", "salt": "TsWXI81fD1"},
-        {"alg": "md5", "salt": "vk7hBjawK/rOSrSWajtbMk95nfgf3"}
-    ]
-    
-    md5_hash = f"YvtoWO6GNHiuCl7xundefinedmypikpak.com{xid}{t}"
-    for item in e:
-        md5_hash += item["salt"]
-        md5_hash = md51(md5_hash)
-    
-    # URL 编码
-    encoded_hash = urllib.parse.quote(md5_hash)
-    return encoded_hash
-def get_proxy_ip(proxy):
-    # 通过配置代理访问一个获取IP地址的服务
-    url = 'http://httpbin.org/ip'
-    
-    try:
-        response = requests.get(url, proxies=proxy)
-        # 获取返回的IP地址
-        ip_address = response.json()['origin']
-        return ip_address
-    except Exception as e:
-        return f"Error: {e}"
-    
 # 初始安全验证
-def init(xid, mail,proxy):
+def init(xid, mail,proxy={}):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/shield/captcha/init'
     body = {
@@ -794,9 +761,93 @@ def init(xid, mail,proxy):
             print('第',retries,'次尝试')
             response = requests.post(
                 url, json=body, headers=headers,proxies=proxy, timeout=5)
-            response_data = response.json()
             print('初始安全验证')
-            # print(response_data)
+            print(response.text)
+            return json.loads(response.text)
+        except:
+            retries += 1
+    return '连接超时'
+# 谷歌验证
+def recaptcha(url,key):
+    from yescaptcha.task import NoCaptchaTaskProxyless
+    from yescaptcha.client import Client
+
+    # yescaptcha Key
+    CLIENT_KEY = key
+    website_url = url
+    website_key = '6LdwHgcqAAAAACSTxyrqqnHNY9-NdSvRD-1A1eap'
+
+    client = Client(client_key=CLIENT_KEY, debug=True)
+    task = NoCaptchaTaskProxyless(website_key=website_key, website_url=website_url)
+    job = client.create_task(task)
+    print('通过谷歌验证')
+    return job.get_solution()
+
+# 获取sign
+
+import requests
+import time
+
+def getSign(captchaCode, rtc_token):
+    url = 'https://ppcode.bilivo.top/getSign'
+    header = {
+        'Accept' : '*/*',
+        'Accept-Encoding':'gzip, deflate, br',
+        'User-Agent':'PostmanRuntime-ApipostRuntime/1.1.0',
+        'Connection':'keep-alive',
+        'Content-Type':'application/json',
+        'Cache-Control':'no-cache',
+        'Host':'ppcode.bilivo.top',
+        'Content-Length':'444'
+    }
+    body = {
+        "captchaCode": captchaCode,
+        "rtcToken": rtc_token
+    }
+    retries = 0
+    max_retries = 4
+    print('获取sign')
+    
+    while retries < max_retries:
+        try:
+            print(f'第 {retries + 1} 次尝试')
+            response = requests.post(url, headers=header, json=body, timeout=10)
+            response.raise_for_status()  # 检查HTTP状态码，抛出异常
+            response_data = response.json()
+            return response_data
+        except requests.exceptions.RequestException as e:
+            print(f'请求错误: {e}')
+            retries += 1
+            time.sleep(2)  # 暂停2秒后重试
+        except ValueError:
+            print('无法解析响应为JSON')
+            retries += 1
+            time.sleep(2)
+    
+    return '超时'
+
+# 获取token
+
+def report(xid, captcha_token, google_token, request_id, sign,rtc_token,referer,proxy={}):
+    url = "https://user.mypikpak.com/credit/v1/report"
+
+    querystring = {"deviceid": xid,
+                   "captcha_token": captcha_token,
+                   "type": "recaptcha",
+                   "result": "0",
+                   "data": google_token,
+                   "request_id":request_id,
+                   "sign":sign,
+                   "rtc_token":rtc_token}
+    retries = 0
+    max_retries = 3
+    print('获取token')
+    while retries < max_retries:
+        try:
+            response2 =  requests.request("GET", url, params=querystring,proxies=proxy,timeout=5)
+
+            response_data = response2.json()
+            print(response_data)
             return response_data
         except:
             retries += 1
@@ -846,15 +897,14 @@ def verification(captcha_token, xid, mail):
     }
 
     retries = 0
-    max_retries = 2
+    max_retries = 3
     print('尝试发送验证码')
     while retries < max_retries:
         try:
             response = requests.post(
-                url, json=body, headers=headers ,timeout=5)
+                url, json=body, headers=headers,timeout=10)
             response_data = response.json()
             print('发送验证码')
-            print(response_data)
             return response_data
         except:
             retries += 1
@@ -925,7 +975,7 @@ def signup(xid, mail, code, verification_token):
         "verification_code": code,
         "verification_token": verification_token,
         'name': f'qihang{random.randint(1, 1000000000)}vip',
-        "password": "Bocchi002b",
+        "password": "pik123",
         "client_id": "YvtoWO6GNHiuCl7x"
     }
     headers = {
@@ -1400,136 +1450,144 @@ def toggle_detection():
     return jsonify({'status': 'error'})
 
 # -------------------------- 主函数一系列网络请求--------------------------
-invite_success_limit = 1
 invitation_records = {}
 
-def main(incode, card_key):
+def main(incode, card_key, rtc_token, key):
     if card_key not in card_keys or card_keys[card_key] <= 0:
-        return {'error': "卡密无效，联系客服"}
+        return {'error': "卡密无效，请联系管理员"}
     now = datetime.datetime.now()
     print("当前日期: ", now)
+    start_time = time.time()
+    success_count = 0
 
     global invitation_records
     current_time = time.time()
-
+    # 检查是否有这个邀请码的记录
     if incode in invitation_records:
+        print('if1')
+        # 获取之前的提交时间
         last_submissions = invitation_records[incode]
-        last_submissions = [
-            t for t in last_submissions if current_time - t < 36000] # 10小时
+        print('if2')
+        # 过滤出在10小时内的提交记录
+        last_submissions = [t for t in last_submissions if current_time - t < 36000]  # 10小时
+        print(last_submissions)
+        # 如果已经有提交记录，并且在10小时内，就返回错误
         if len(last_submissions) >= 1:
             return {'error': "24小时内已提交1次，请明日再试。"}
-        invitation_records[incode] = last_submissions
     else:
+        # 如果没有记录，初始化
         invitation_records[incode] = []
+    try:
+        print('生成xid')
+        xid = str(uuid.uuid4()).replace("-", "")
+        email_users, email_passes = read_and_process_file(file_path)
 
-    print('生成xid')
-    xid = getuuid()
-    email_users, email_passes = read_and_process_file(file_path)
+        if not email_users or not email_passes:
+            return {'error': "暂无可用邮箱"}
 
-    if not email_users or not email_passes:
-        return {'error': "暂无可用邮箱"}
+        for email_user, email_pass in zip(email_users, email_passes):
+            mail = email_user
+            proxy = get_proxy()
+            print('获取到的代理为:',proxy)
+            # 执行初始化安全验证
+            Init = init(xid, mail, proxy)
+            if (Init == '连接超时'):
+                    return {'error': "连接超时,请返回重试，多次失败请联系管理员查看代理池"}
+            captcha_token = Init['captcha_token']
+            if 'url' in Init.keys():
+                google_token = recaptcha(Init['url'],key)['gRecaptchaResponse']
+                signGet = getSign(captcha_token, rtc_token)
+                if(signGet == '超时'):
+                    return {'error': "获取sign超时,请返回重试"}
+                sign = signGet['data']['sign']
+                request_id = signGet['data']['request_id']
+                rtc_token = signGet['data']['rtc_token']
+                captoken = captcha_token
+                captcha_token = report(xid, captoken, google_token,request_id,sign,rtc_token,proxy)['captcha_token']
+            Verification = verification(captcha_token, xid, mail)
+            if(Verification == '连接超时'):
+                return {'error':'发送验证码超时'}
+            if 'error' in Verification.keys():
+                return {'error':'安全验证失败'}
+            # 获取验证码
+            code = get_email_with_third_party(mail, email_user, email_pass)
 
-    for email_user, email_pass in zip(email_users, email_passes):
-        mail = email_user
-        proxy = get_proxy()
-        print('获取到的代理为:',proxy)
-        # 执行初始化安全验证
-        Init = init(xid, mail, proxy)
-        
-        if (Init == '连接超时'):
-                return {'error': "连接超时,请刷新重试，多次失败请联系管理员查看代理池"}
-        reCaptcha_url = Init['url'] + '&redirect_uri=https%3A%2F%2Fmypikpak.com%2Floading&state=getcaptcha' + str(round(time.time()*1000))
+            if not code:
+                print(f"无法从邮箱获取验证码: {mail}")
+                # 获取当前时间
+                current_timestamp = time.time()
+                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                return {'error': "邮箱登录/验证失败，请返回重试"}
 
-        # 保存 mail 和 xid 到会话
-        session['mail'] = mail
-        session['xid'] = xid
-        session['email_user'] = email_user
-        session['email_pass'] = email_pass
-        session['proxy'] = proxy
-        session['incode'] = incode
-        session['card_key'] = card_key
+            # 使用验证码完成其他操作
+            verification_response = verify(xid, Verification['verification_id'], code)
+            if(verification_response == '验证码不正确'):
+                # 获取当前时间
+                current_timestamp = time.time()
+                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                return {'error': "验证码不正确"}
+            signup_response = signup(xid, mail, code, verification_response['verification_token'])
+            current_time = str(int(time.time()))
+            sign = get_sign(xid, current_time)
+            init1_response = init1(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
+            invite(signup_response['access_token'],init1_response['captcha_token'], xid)
+            init2_response = init2(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
+            activation = activation_code(signup_response['access_token'], init2_response['captcha_token'], xid, incode)
+            end_time = time.time()
+            run_time = f'{(end_time - start_time):.2f}'
 
-        # 返回需要验证的链接给前端
-        return {'captcha_url': reCaptcha_url}
-def main2(captcha_token,incode,card_key,email_user,email_pass,proxy,xid,):
-    start_time = time.time()
-    success_count = 0
-    mail = email_user
+            # 检查邀请是否成功
+            # 目前会员邀请之后会有最高24小时的审核，所以会一直显示失败
+            # 如果会员天数等于5 邀请成功
+            if activation.get('add_days') == 5:
+                result = f"邀请成功 邀请码: {incode} email: {mail} 密码：Bocchi002b"
+                print(result)
+                success_count += 1
+                # 邀请时间限制
+                invitation_records[incode].append(time.time())
+                # 获取当前时间
+                current_timestamp = time.time()
+                # 更新文件中的邮箱和密码状态 添加时间
+                update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
+                # 更新卡密使用次数
+                card_keys[card_key] -= 1
+                save_card_keys(card_keys)  # 保存更新后的卡密信息
+                return {'message': f"邀请成功: {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
+            # 如果会员天数等于0 邀请成功(待定)
+            elif activation.get('add_days') == 0:
+                result = f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
+                print(result)
+                success_count += 1
+                # 邀请时间限制
+                # invitation_records[incode].append(time.time())
+                # 获取当前时间
+                current_timestamp = time.time()
+                # 更新文件中的邮箱和密码状态 添加时间
+                update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
+                # 更新卡密使用次数
+                card_keys[card_key] -= 1
+                save_card_keys(card_keys)  # 保存更新后的卡密信息
+                return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
+            else:
+                result = f"未知情况: {activation}"
+                print(result)
+                # 获取当前时间
+                current_timestamp = time.time()
+                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                return {'error': "未知情况"}
+    except:
+        return {'error': "运行出错，请稍后再试"}
 
-    Verification = verification(captcha_token, xid, mail)
-    if 'error' in Verification.keys():
-        return {'error':'安全验证失败，请确定复制的链接是跳转之后的链接<br>或者请尝试更换浏览器<br>电脑推荐使用edge游览器<br>手机推荐使用X浏览器'}
-    # 获取验证码
-    code = get_email_with_third_party(mail, email_user, email_pass)
+# html页面
+from pywebio.output import put_html, clear, put_markdown
+from pywebio.session import run_js
+from concurrent.futures import ThreadPoolExecutor
 
-    if not code:
-        print(f"无法从邮箱获取验证码: {mail}")
-        # 获取当前时间
-        current_timestamp = time.time()
-        update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-        return {'error': "邮箱登录/验证失败，请刷新重试"}
+from pywebio.output import put_html, clear, put_markdown, toast
+from pywebio.session import eval_js
+from concurrent.futures import ThreadPoolExecutor
 
-    # 使用验证码完成其他操作
-    verification_response = verify(xid, Verification['verification_id'], code)
-    if(verification_response == '验证码不正确'):
-        # 获取当前时间
-        current_timestamp = time.time()
-        update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-        return {'error': "验证码不正确"}
-    signup_response = signup(xid, mail, code, verification_response['verification_token'])
-    current_time = str(int(time.time()))
-    sign = get_sign(xid, current_time)
-    init1_response = init1(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
-    invite(signup_response['access_token'],init1_response['captcha_token'], xid)
-    init2_response = init2(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
-    activation = activation_code(signup_response['access_token'], init2_response['captcha_token'], xid, incode)
-    end_time = time.time()
-    run_time = f'{(end_time - start_time):.2f}'
-
-    # 检查邀请是否成功
-    # 目前会员邀请之后会有最高24小时的审核，所以会一直显示失败
-    # 如果会员天数等于5 邀请成功
-    if activation.get('add_days') == 5:
-        result = f"邀请成功 邀请码: {incode} email: {mail} 密码：Bocchi002b"
-        print(result)
-        success_count += 1
-        # 邀请时间限制
-        invitation_records[incode].append(time.time())
-        # 获取当前时间
-        current_timestamp = time.time()
-        # 更新文件中的邮箱和密码状态 添加时间
-        update_file_status(file_path , email_user, email_pass, "登录成功", current_timestamp)
-        # 更新卡密使用次数
-        card_keys[card_key] -= 1
-        save_card_keys(card_keys)  # 保存更新后的卡密信息
-        return {
-        'message': f"邀请成功: {incode} 运行时间: {run_time}秒",
-        'email': mail,
-        'password': 'Bocchi002b'
-        }
-    # 如果会员天数等于0 邀请成功(待定)
-    elif activation.get('add_days') == 0:
-        result = f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’'
-        print(result)
-        success_count += 1
-        # 邀请时间限制
-        # invitation_records[incode].append(time.time())
-        # 获取当前时间
-        current_timestamp = time.time()
-        # 更新文件中的邮箱和密码状态 添加时间
-        update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
-        # 更新卡密使用次数
-        card_keys[card_key] -= 1
-        save_card_keys(card_keys)  # 保存更新后的卡密信息
-        return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
-    else:
-        result = f"未知情况: {activation}"
-        print(result)
-        # 获取当前时间
-        current_timestamp = time.time()
-        update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
-        return {'error': "未知情况"}
-
+# html页面
 # html页面
 @app.route('/')
 def vip():
@@ -1566,9 +1624,12 @@ def vip():
 def submit():
     incode = request.form.get('incode')
     card_key = request.form.get('card_key')
-
+    rtc_token = request.form.get('rtc_token')
+    key = request.form.get('key')
     session['incode'] = incode
     session['card_key'] = card_key
+    session['rtc_token'] = rtc_token
+    session['key'] = key
 
     return redirect(url_for('waiting'))
 
@@ -1578,61 +1639,14 @@ def submit():
 def process():
     incode = session.get('incode')
     card_key = session.get('card_key')
-
+    rtc_token = session.get('rtc_token')
+    key = session.get('key')
     # 调用主逻辑，获取结果
-    result = main(incode, card_key)
-
-    # 检查是否有错误
-    if 'error' in result:
-        return jsonify({'redirect': url_for('error', error_message=result['error'])})
-
-    if result.get('captcha_url'):
-        return jsonify({'redirect': url_for('captcha', url=result['captcha_url'])})
-
-    # 成功则返回结果页面的URL
-    return jsonify({'redirect': url_for('error', error_message='未知错误')})
-
-@app.route('/captcha')
-def captcha():
-    # 获取 reCaptcha 的 URL
-    captcha_url = request.args.get('url')
-    return render_template('captcha.html', captcha_url=captcha_url)
-
-@app.route('/captcha_verify', methods=['POST'])
-def captcha_verify():
-    input_url = request.form.get('input_url')
-
-    session['input_url'] = input_url
-
-    # 渲染等待页面并告诉它是验证码验证的逻辑
-    return render_template('waiting.html', captcha_verify=True)
-
-
-@app.route('/process_captcha', methods=['POST'])
-def process_captcha():
-    # 获取session中的数据
-    input_url = session.get('input_url')
-    parsed_url = urlparse(input_url)
-    query_params = parse_qs(parsed_url.query)
-    captcha_token = query_params.get('captcha_token', [''])[0]
-
-    xid = session.get('xid')
-    email_user = session.get('email_user')
-    email_pass = session.get('email_pass')
-    proxy = session.get('proxy')
-    incode = session.get('incode')
-    card_key = session.get('card_key')
-
-    # 继续主逻辑
-    result = main2(captcha_token, incode, card_key, email_user, email_pass, proxy, xid)
-
+    result = main(incode, card_key, rtc_token, key)
     # 返回处理结果，重定向到相应页面
     if 'error' in result:
         return jsonify({'redirect': url_for('error', error_message=result['error'])})
-    
     return jsonify({'redirect': url_for('result', result_message=result['message'])})
-
-
 
 @app.route('/waiting')
 def waiting():
@@ -1647,7 +1661,6 @@ def result():
 def error():
     error_message = request.args.get('error_message')
     return render_template('error.html', error_message=error_message)
-
 
 
 if __name__ == '__main__':

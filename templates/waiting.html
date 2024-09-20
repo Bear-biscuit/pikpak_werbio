@@ -83,11 +83,6 @@
     $(document).ready(function() {
         var processUrl = "{{ url_for('process') }}"; // 默认处理URL
 
-        // 检查是否是captcha验证的情况
-        {% if captcha_verify %}
-            processUrl = "{{ url_for('process_captcha') }}";
-        {% endif %}
-
         // 页面加载完成后发送AJAX请求
         $.ajax({
             url: processUrl,
