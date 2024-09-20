@@ -740,7 +740,7 @@ def get_sign(xid, t):
 
 
 # 初始安全验证
-def init(xid, mail,proxy={}):
+def init(xid, mail,proxy):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/shield/captcha/init'
     body = {
@@ -856,7 +856,7 @@ def getSign(captchaCode, rtc_token):
 
 # 获取token
 
-def report(xid, captcha_token, google_token, request_id, sign,rtc_token,referer,proxy={}):
+def report(xid, captcha_token, google_token, request_id, sign,rtc_token,referer,proxy):
     url = "https://user.mypikpak.com/credit/v1/report"
 
     querystring = {"deviceid": xid,
