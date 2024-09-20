@@ -523,6 +523,11 @@ def get_verification_code(email, password, retries=1, max_retries=6):
         print("解析响应JSON失败")
         return None
 
+    # 检查返回的code是否为 -1
+    if res_json.get("code") == -1:
+        print(f"错误: {res_json.get('msg')}")
+        return '超时'
+
     if "verification_code" in res_json:
         print('查询到验证码:', res_json['verification_code'])
         return res_json['verification_code']
