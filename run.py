@@ -503,6 +503,34 @@ def update_file_status(file_path, email, password, status, time):
     except Exception as e:
         print("更新文件状态失败:", e)
 
+# 纸鸢邮件api
+def get_verification_code(email, password):
+    url = "https://paperkiteidleplus.top/document/pikpak_invite/pop3.php"
+
+    payload = {
+        "email": email,
+        "password": password
+    }
+    headers = {"content-type": "application/json"}
+    max_retries = 6
+    retries = 1
+    print('尝试登录邮箱')
+
+    response = requests.request("POST", url, json=payload, headers=headers)
+
+    print('第', retries, '次尝试获取')  
+    res_json = json.loads(response.text)
+    if "verification_code" in res_json.keys():
+        print('查询到验证码:', res_json['verification_code'])
+        return res_json['verification_code']
+    else:
+        retries +=1
+        if retries < max_retries:
+            return get_verification_code(email, password)
+        else: return None
+
+    
+
 # POP微软邮箱登录
 def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=10):
     pop3_server = "pop-mail.outlook.com"
@@ -1510,7 +1538,7 @@ def main(incode, card_key, rtc_token, key):
             if 'error' in Verification.keys():
                 return {'error':'安全验证失败'}
             # 获取验证码
-            code = get_email_with_third_party(mail, email_user, email_pass)
+            code = get_verification_code(email_user, email_pass)
 
             if not code:
                 print(f"无法从邮箱获取验证码: {mail}")
