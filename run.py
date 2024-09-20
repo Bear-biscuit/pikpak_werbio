@@ -173,7 +173,7 @@ def login():
         
         # 简单验证，用户名和密码硬编码为 'admin' 和 'password'
         # 请自行更改账号密码
-        if username == 'admin' and password == 'password':
+        if username == 'bocchi' and password == 'cyh031020':
             session['logged_in'] = True
             flash('登录成功！', 'success')
             return redirect(url_for('index'))
@@ -529,8 +529,6 @@ def get_verification_code(email, password):
             return get_verification_code(email, password)
         else: return None
 
-    
-
 # POP微软邮箱登录
 def get_email_with_third_party(recipient_email, email_user, email_pass, delay=2, max_retries=10):
     pop3_server = "pop-mail.outlook.com"
@@ -620,7 +618,7 @@ def wxpusher(new_email, password, invitation_code):
 # 动态代理
 def get_proxy():
     # 请更改为你自己的代理池地址
-    proxy_uri = requests.get('https://example.com/fetch_random').text
+    proxy_uri = requests.get('https://proxy.bocchi2b.top/fetch_random').text
     
     if len(proxy_uri) == 0:
         proxies = {}
@@ -856,7 +854,7 @@ def getSign(captchaCode, rtc_token):
 
 # 获取token
 
-def report(xid, captcha_token, google_token, request_id, sign,rtc_token,referer):
+def report(xid, captcha_token, google_token, request_id, sign,rtc_token):
     url = "https://user.mypikpak.com/credit/v1/report"
 
     querystring = {"deviceid": xid,
