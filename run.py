@@ -1559,7 +1559,7 @@ def main(incode, card_key, rtc_token, key):
                 print(result)
                 success_count += 1
                 # 邀请时间限制
-                # invitation_records[incode].append(time.time())
+                invitation_records[incode].append(time.time())
                 # 获取当前时间
                 current_timestamp = time.time()
                 # 更新文件中的邮箱和密码状态 添加时间
@@ -1576,18 +1576,8 @@ def main(incode, card_key, rtc_token, key):
                 update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                 return {'error': "未知情况"}
     except:
-        return {'error': "运行出错，请稍后再试"}
+        return {'error': "运行出错，请稍后重试"}
 
-# html页面
-from pywebio.output import put_html, clear, put_markdown
-from pywebio.session import run_js
-from concurrent.futures import ThreadPoolExecutor
-
-from pywebio.output import put_html, clear, put_markdown, toast
-from pywebio.session import eval_js
-from concurrent.futures import ThreadPoolExecutor
-
-# html页面
 # html页面
 @app.route('/')
 def vip():
