@@ -826,7 +826,7 @@ import requests
 import time
 
 def getSign(captchaCode, rtc_token):
-    url = 'https://ppcode.bilivo.top/getSign'
+    url = 'https://pik-sign.bilivo.top/getSign'
     header = {
         'Accept' : '*/*',
         'Accept-Encoding':'gzip, deflate, br',
