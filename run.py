@@ -1550,7 +1550,6 @@ def main(incode, card_key, rtc_token, key):
             if start_time < tomorrow_nine_am:
                 return {'error': "今天已经提交过了，请在次日9点后再试。"}
     try:
-        print('生成xid')
         xid = str(uuid.uuid4()).replace("-", "")
         email_users, email_passes = read_and_process_file(file_path)
 
@@ -1575,6 +1574,8 @@ def main(incode, card_key, rtc_token, key):
                 rtc_token = signGet['data']['rtc_token']
                 captoken = captcha_token
                 captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)['captcha_token']
+                if (captcha_token['error'] == 'invalid_argument'):
+                    return {'error':'参数无效,请返回重试'}
             Verification = verification(captcha_token, xid, mail)
             if(Verification == '连接超时'):
                 return {'error':'发送验证码超时'}
@@ -1599,7 +1600,7 @@ def main(incode, card_key, rtc_token, key):
                 return {'error': "验证码不正确"}
             signup_response = signup(xid, mail, code, verification_response['verification_token'])
             print(signup_response)
-            if (signup['error'] == 'already_exists'):
+            if (signup_response['error'] == 'already_exists'):
                 current_timestamp = time.time()
                 update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                 return {'error':'该邮箱已被使用'}
