@@ -1600,7 +1600,7 @@ def main(incode, card_key, rtc_token, key):
                 return {'error': "验证码不正确"}
             signup_response = signup(xid, mail, code, verification_response['verification_token'])
             print(signup_response)
-            if (signup_response['error'] == 'already_exists'):
+            if (signup_response.get('error') == 'already_exists'):
                 current_timestamp = time.time()
                 update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                 return {'error':'该邮箱已被使用'}
