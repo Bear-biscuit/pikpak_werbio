@@ -755,7 +755,7 @@ def get_sign(xid, t):
 
 
 # 初始安全验证
-def init(xid, mail,proxy):
+def init(xid, mail):
     global randint_ip
     url = 'https://user.mypikpak.com/v1/shield/captcha/init'
     body = {
@@ -798,12 +798,12 @@ def init(xid, mail,proxy):
         'X-Forwarded-For': str(randint_ip)
     }
     retries = 1
-    max_retries = 4
+    max_retries = 6
     while retries < max_retries:
         try:
             print('第',retries,'次尝试')
             response = requests.post(
-                url, json=body, headers=headers,proxies=proxy, timeout=5)
+                url, json=body, headers=headers,proxies=get_proxy(), timeout=10)
             print('初始安全验证')
             print(response.text)
             return json.loads(response.text)
@@ -1531,7 +1531,6 @@ def main(incode, card_key, rtc_token, key):
     if card_key not in card_keys or card_keys[card_key] <= 0:
         return {'error': "卡密无效，请联系管理员"}
     start_time = time.time()
-    current_time = time.time()
     today_nine_am = get_today_nine_am()
     tomorrow_nine_am = get_tomorrow_nine_am()
 
@@ -1539,16 +1538,17 @@ def main(incode, card_key, rtc_token, key):
     limit_enabled = config.get("limit_enabled", True)
     invitation_records = config.get("invitation_records", {})
 
+    # 确保有记录的初始化
+    if incode not in invitation_records:
+        invitation_records[incode] = []
+
     if limit_enabled:
-        if incode in invitation_records:
-            last_submission_time = invitation_records[incode][-1]  # 获取最后一次提交时间
-            
-            # 如果最后一次提交是在当天9点之后，需要等待到次日9点
-            if last_submission_time >= today_nine_am:
-                if current_time < tomorrow_nine_am:
-                    return {'error': "今天已经提交过了，请在次日9点后再试。"}
-        else:
-            invitation_records[incode] = []
+        last_submission_time = invitation_records[incode][-1] if invitation_records[incode] else 0  # 获取最后一次提交时间，如果没有记录则默认为0
+        
+        # 如果最后一次提交是在当天9点之后，需要等待到次日9点
+        if last_submission_time >= today_nine_am:
+            if start_time < tomorrow_nine_am:
+                return {'error': "今天已经提交过了，请在次日9点后再试。"}
     try:
         print('生成xid')
         xid = str(uuid.uuid4()).replace("-", "")
@@ -1558,11 +1558,8 @@ def main(incode, card_key, rtc_token, key):
             return {'error': "暂无可用邮箱"}
         for email_user, email_pass in zip(email_users, email_passes):
             mail = email_user
-            print('111')
-            proxy = get_proxy()
-            print('获取到的代理为:',proxy)
             # 执行初始化安全验证
-            Init = init(xid, mail, proxy)
+            Init = init(xid, mail)
             if (Init == '连接超时'):
                     return {'error': "连接超时,请返回重试，多次失败请联系管理员查看代理池"}
             captcha_token = Init['captcha_token']
@@ -1601,6 +1598,12 @@ def main(incode, card_key, rtc_token, key):
                 update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
                 return {'error': "验证码不正确"}
             signup_response = signup(xid, mail, code, verification_response['verification_token'])
+            print(signup_response)
+            if (signup['error'] == 'already_exists'):
+                current_timestamp = time.time()
+                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                return {'error':'该邮箱已被使用'}
+
             current_time = str(int(time.time()))
             sign = get_sign(xid, current_time)
             init1_response = init1(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
@@ -1613,7 +1616,7 @@ def main(incode, card_key, rtc_token, key):
             if activation.get('add_days') == 0:
                 print(f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’')
 
-                invitation_records[incode].append(time.time())
+                invitation_records[incode].append(start_time)
                 config["invitation_records"] = invitation_records
                 save_config(config)
                 # 获取当前时间
