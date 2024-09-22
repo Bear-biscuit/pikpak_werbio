@@ -1573,10 +1573,10 @@ def main(incode, card_key, rtc_token, key):
                 request_id = signGet['data']['request_id']
                 rtc_token = signGet['data']['rtc_token']
                 captoken = captcha_token
-                captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)['captcha_token']
+                captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)
                 if (captcha_token['error'] == 'invalid_argument'):
                     return {'error':'参数无效,请返回重试'}
-            Verification = verification(captcha_token, xid, mail)
+            Verification = verification(captcha_token['captcha_token'], xid, mail)
             if(Verification == '连接超时'):
                 return {'error':'发送验证码超时'}
             if 'error' in Verification.keys():
