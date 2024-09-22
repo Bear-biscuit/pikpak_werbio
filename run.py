@@ -623,22 +623,32 @@ def wxpusher(new_email, password, invitation_code):
 
 
 # 动态代理
+
 def get_proxy():
     # 请更改为你自己的代理池地址
-    proxy_uri = requests.get('http://127.0.0.1:5010/fetch_random').text
-    
-    if len(proxy_uri) == 0:
-        proxies = {}
-        # print('获取代理失败')
-    else:
-        proxies = {
-            # 如果你不想使用代理池，请把下面两条语句删掉
-            # 不使用极大概率奖励不生效
-            'http': proxy_uri,
-            'https': proxy_uri
-        }
-        # print('获取代理成功')
-    return proxies
+    try:
+        response = requests.get('http://127.0.0.1:5010/fetch_random', timeout=10)
+        response.raise_for_status()  # 检查HTTP状态码
+        proxy_uri = response.text.strip()
+
+        if len(proxy_uri) == 0:
+            proxies = {}
+            print('获取代理失败: 返回的代理 URI 为空')
+        else:
+            proxies = {
+                # 如果你不想使用代理池，请把下面两条语句删掉
+                # 不使用极大概率奖励不生效
+                'http': proxy_uri,
+                'https': proxy_uri
+            }
+            print('获取代理成功:', proxies)
+            
+        return proxies
+
+    except requests.exceptions.RequestException as e:
+        print(f'请求错误: {e}')
+        return {}
+
 
 
 def get_randint_ip():
