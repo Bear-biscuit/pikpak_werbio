@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import poplib
 import hashlib
-import urllib.parse
+import pytz
 import json
 import random
 import re
@@ -15,12 +15,8 @@ import requests
 import uuid
 import email
 import threading
-from pywebio.input import input_group, input, TEXT
-from pywebio.output import put_text, put_markdown, clear, put_html
-from pywebio import start_server
-# from datetime import datetime
-from pywebio.platform.flask import webio_view
 from urllib.parse import urlparse, parse_qs
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 # 创建一个自定义日志过滤器
@@ -629,7 +625,7 @@ def wxpusher(new_email, password, invitation_code):
 # 动态代理
 def get_proxy():
     # 请更改为你自己的代理池地址
-    proxy_uri = requests.get('http://127.0.0.1/fetch_random').text
+    proxy_uri = requests.get('https://proxy.bocchi2b.top/fetch_random').text
     
     if len(proxy_uri) == 0:
         proxies = {}
@@ -638,8 +634,8 @@ def get_proxy():
         proxies = {
             # 如果你不想使用代理池，请把下面两条语句删掉
             # 不使用极大概率奖励不生效
-            'http': proxy_uri,
-            'https': proxy_uri
+            # 'http': proxy_uri,
+            # 'https': proxy_uri
         }
         # print('获取代理成功')
     return proxies
@@ -805,7 +801,7 @@ def init(xid, mail,proxy):
             retries += 1
     return '连接超时'
 # 谷歌验证
-def recaptcha(url,key):
+def recaptcha(url, key):
     from yescaptcha.task import NoCaptchaTaskProxyless
     from yescaptcha.client import Client
 
@@ -816,9 +812,17 @@ def recaptcha(url,key):
 
     client = Client(client_key=CLIENT_KEY, debug=True)
     task = NoCaptchaTaskProxyless(website_key=website_key, website_url=website_url)
-    job = client.create_task(task)
-    print('通过谷歌验证')
-    return job.get_solution()
+
+    try:
+        job = client.create_task(task)
+        print('通过谷歌验证')
+        solution = job.get_solution() 
+        return solution
+    except Exception as e:
+        print("发生异常:", str(e))
+        return None
+
+
 
 # 获取sign
 
@@ -828,14 +832,9 @@ import time
 def getSign(captchaCode, rtc_token):
     url = 'https://pik-sign.bilivo.top/getSign'
     header = {
-        'Accept' : '*/*',
-        'Accept-Encoding':'gzip, deflate, br',
-        'User-Agent':'PostmanRuntime-ApipostRuntime/1.1.0',
-        'Connection':'keep-alive',
-        'Content-Type':'application/json',
-        'Cache-Control':'no-cache',
-        'Host':'ppcode.bilivo.top',
-        'Content-Length':'444'
+        'Accept': '*/*',
+        'User-Agent': 'PostmanRuntime-ApipostRuntime/1.1.0',
+        'Content-Type': 'application/json',
     }
     body = {
         "captchaCode": captchaCode,
@@ -850,14 +849,13 @@ def getSign(captchaCode, rtc_token):
             print(f'第 {retries + 1} 次尝试')
             response = requests.post(url, headers=header, json=body, timeout=10)
             response.raise_for_status()  # 检查HTTP状态码，抛出异常
-            response_data = response.json()
-            return response_data
+            return response.json()
         except requests.exceptions.RequestException as e:
             print(f'请求错误: {e}')
             retries += 1
             time.sleep(2)  # 暂停2秒后重试
         except ValueError:
-            print('无法解析响应为JSON')
+            print('无法解析响应为JSON，响应内容:', response.text)  # 打印响应内容
             retries += 1
             time.sleep(2)
     
@@ -1487,30 +1485,60 @@ def toggle_detection():
     return jsonify({'status': 'error'})
 
 # -------------------------- 主函数一系列网络请求--------------------------
-invitation_records = {}
+
+invitation_file = r'./invitation_config.json'
+
+# 读取JSON文件内容
+def load_config():
+    if os.path.exists(invitation_file):
+        with open(invitation_file, 'r') as f:
+            return json.load(f)
+    else:
+        return {"limit_enabled": True, "invitation_records": {}}
+
+# 保存配置到JSON文件
+def save_config(data):
+    with open(invitation_file, 'w') as f:
+        json.dump(data, f)
+
+# 获取中国时区
+china_tz = pytz.timezone('Asia/Shanghai')
+
+# 获取今天的 9 点（中国时间）
+def get_today_nine_am():
+    now = datetime.now(china_tz)  # 获取当前中国时间
+    nine_am_today = now.replace(hour=9, minute=0, second=0, microsecond=0)
+    return nine_am_today.timestamp()
+
+# 获取明天的 9 点（中国时间）
+def get_tomorrow_nine_am():
+    now = datetime.now(china_tz)  # 获取当前中国时间
+    tomorrow = now + timedelta(days=1)
+    nine_am_tomorrow = tomorrow.replace(hour=9, minute=0, second=0, microsecond=0)
+    return nine_am_tomorrow.timestamp()
 
 def main(incode, card_key, rtc_token, key):
     if card_key not in card_keys or card_keys[card_key] <= 0:
         return {'error': "卡密无效，请联系管理员"}
-    now = datetime.datetime.now()
-    print("当前日期: ", now)
     start_time = time.time()
-    success_count = 0
-
-    global invitation_records
     current_time = time.time()
-    # 检查是否有这个邀请码的记录
-    if incode in invitation_records:
-        # 获取之前的提交时间
-        last_submissions = invitation_records[incode]
-        # 过滤出在10小时内的提交记录
-        last_submissions = [t for t in last_submissions if current_time - t < 36000]  # 10小时
-        # 如果已经有提交记录，并且在10小时内，就返回错误
-        if len(last_submissions) >= 1:
-            return {'error': "24小时内已提交1次，请明日再试。"}
-    else:
-        # 如果没有记录，初始化
-        invitation_records[incode] = []
+    today_nine_am = get_today_nine_am()
+    tomorrow_nine_am = get_tomorrow_nine_am()
+
+    config = load_config()
+    limit_enabled = config.get("limit_enabled", True)
+    invitation_records = config.get("invitation_records", {})
+
+    if limit_enabled:
+        if incode in invitation_records:
+            last_submission_time = invitation_records[incode][-1]  # 获取最后一次提交时间
+            
+            # 如果最后一次提交是在当天9点之后，需要等待到次日9点
+            if last_submission_time >= today_nine_am:
+                if current_time < tomorrow_nine_am:
+                    return {'error': "今天已经提交过了，请在次日9点后再试。"}
+        else:
+            invitation_records[incode] = []
     try:
         print('生成xid')
         xid = str(uuid.uuid4()).replace("-", "")
@@ -1518,9 +1546,9 @@ def main(incode, card_key, rtc_token, key):
 
         if not email_users or not email_passes:
             return {'error': "暂无可用邮箱"}
-
         for email_user, email_pass in zip(email_users, email_passes):
             mail = email_user
+            print('111')
             proxy = get_proxy()
             print('获取到的代理为:',proxy)
             # 执行初始化安全验证
@@ -1529,7 +1557,9 @@ def main(incode, card_key, rtc_token, key):
                     return {'error': "连接超时,请返回重试，多次失败请联系管理员查看代理池"}
             captcha_token = Init['captcha_token']
             if 'url' in Init.keys():
-                google_token = recaptcha(Init['url'],key)['gRecaptchaResponse']
+                google_token = recaptcha(Init['url'],key)
+                if not google_token:
+                    return {'error': "请检查你的打码平台密钥"}
                 signGet = getSign(captcha_token, rtc_token)
                 if(signGet == '超时'):
                     return {'error': "获取sign超时,请返回重试"}
@@ -1537,7 +1567,7 @@ def main(incode, card_key, rtc_token, key):
                 request_id = signGet['data']['request_id']
                 rtc_token = signGet['data']['rtc_token']
                 captoken = captcha_token
-                captcha_token = report(xid, captoken, google_token,request_id,sign,rtc_token)['captcha_token']
+                captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)['captcha_token']
             Verification = verification(captcha_token, xid, mail)
             if(Verification == '连接超时'):
                 return {'error':'发送验证码超时'}
@@ -1567,14 +1597,15 @@ def main(incode, card_key, rtc_token, key):
             invite(signup_response['access_token'],init1_response['captcha_token'], xid)
             init2_response = init2(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
             activation = activation_code(signup_response['access_token'], init2_response['captcha_token'], xid, incode)
-            print(activation)
+            # print(activation)
             end_time = time.time()
             run_time = f'{(end_time - start_time):.2f}'
             if activation.get('add_days') == 0:
                 print(f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’')
-                success_count += 1
-                # 邀请时间限制
+
                 invitation_records[incode].append(time.time())
+                config["invitation_records"] = invitation_records
+                save_config(config)
                 # 获取当前时间
                 current_timestamp = time.time()
                 # 更新文件中的邮箱和密码状态 添加时间
@@ -1591,6 +1622,21 @@ def main(incode, card_key, rtc_token, key):
                 return {'error': f"未知情况{activation}"}
     except:
         return {'error': "运行出错，请稍后重试"}
+
+# 获取邀请开关状态
+@app.route('/get_limit_status', methods=['GET'])
+def get_limit_status():
+    config = load_config()
+    return jsonify({"limit_enabled": config["limit_enabled"]})
+
+# 更新邀请开关状态
+@app.route('/set_limit_status', methods=['POST'])
+def set_limit_status():
+    status = request.json.get("limit_enabled")
+    config = load_config()
+    config["limit_enabled"] = status
+    save_config(config)
+    return jsonify({"message": "开关状态已更新", "limit_enabled": status})
 
 # html页面
 @app.route('/')
