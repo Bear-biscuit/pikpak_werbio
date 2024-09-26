@@ -1356,7 +1356,7 @@ def read_email_file(file_path):
         print(f"读取到 {len(lines)} 行内容")
         for line in lines:
             line = line.strip()
-            if ' 登录成功' in line or ' 失败' in line:
+            if ' 登录成功' in line or ' 失败' in line or '使用中' in line:
                 print(f"跳过处理已标记的行: {line}")
             else:
                 parts = line.split('----')
