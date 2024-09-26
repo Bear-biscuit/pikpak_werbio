@@ -459,7 +459,6 @@ def update_email(index):
         write_emails(emails)
     return redirect(url_for('index'))
 # 以下为会员邀请部分
-# 读取文件内容提取邮箱和密码，跳过包含登录成功或登录成功(待定)的行
 def read_and_process_file(file_path):
     try:
         email_user_list = []
@@ -469,7 +468,7 @@ def read_and_process_file(file_path):
         updated_lines = []
         for line in lines:
             line = line.strip()
-            if "登录成功" in line or "登录成功(待定)" in line or "失败" in line:
+            if "使用中" in line or "登录成功(待定)" in line or "失败" in line:
                 continue
             match = re.match(r'^(.+?)----([^\s@]+)$', line)
             if match:
@@ -486,18 +485,26 @@ def read_and_process_file(file_path):
         return None, None
 
 # 更新文件
-def update_file_status(file_path, email, password, status, time):
+def update_file_status(file_path, email, status=None, time=None, reset=False):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
         with open(file_path, 'w', encoding='utf-8') as file:
             for line in lines:
                 if line.strip().startswith(email) and "----" in line:
-                    file.write(f"{line.strip()} {status} {time}\n")
+                    if reset:
+                        # 恢复到初始状态
+                        initial_line = line.split(" ")[0].strip()
+                        file.write(f"{initial_line}\n")
+                    else:
+                        # 直接写入状态和时间戳
+                        initial_line = line.split(" ")[0].strip()
+                        file.write(f"{initial_line} {status} {time}\n")
                 else:
                     file.write(line)
     except Exception as e:
         print("更新文件状态失败:", e)
+
 
 # 纸鸢邮件api
 def get_verification_code(email, password, retries=1, max_retries=6):
@@ -1557,17 +1564,24 @@ def main(incode, card_key, rtc_token, key):
             return {'error': "暂无可用邮箱"}
         for email_user, email_pass in zip(email_users, email_passes):
             mail = email_user
+            update_file_status(r'./email.txt', email_user, status = "使用中", time = '')
             # 执行初始化安全验证
             Init = init(xid, mail)
             if (Init == '连接超时'):
-                    return {'error': "连接超时,请返回重试，多次失败请联系管理员查看代理池"}
+                update_file_status(file_path, email_user,reset=True)
+                return {'error': "连接超时,请返回重试，多次失败请联系管理员查看代理池"}
+            if 'error' in Init.keys():
+                update_file_status(file_path, email_user,reset=True)
+                return {'error': "账号或设备操作过于频繁，请稍后重试"}
             captcha_token = Init['captcha_token']
             if 'url' in Init.keys():
                 google_token = recaptcha(Init['url'],key)
                 if not google_token:
+                    update_file_status(file_path, email_user,reset=True)
                     return {'error': "请检查你的打码平台密钥"}
                 signGet = getSign(captcha_token, rtc_token)
                 if(signGet == '超时'):
+                    update_file_status(file_path, email_user,reset=True)
                     return {'error': "获取sign超时,请返回重试"}
                 sign = signGet['data']['sign']
                 request_id = signGet['data']['request_id']
@@ -1575,11 +1589,14 @@ def main(incode, card_key, rtc_token, key):
                 captoken = captcha_token
                 captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)
                 if (captcha_token['error'] == 'invalid_argument'):
+                    update_file_status(file_path, email_user,reset=True)
                     return {'error':'参数无效,请返回重试'}
             Verification = verification(captcha_token['captcha_token'], xid, mail)
             if(Verification == '连接超时'):
+                update_file_status(file_path, email_user,reset=True)
                 return {'error':'发送验证码超时'}
             if 'error' in Verification.keys():
+                update_file_status(file_path, email_user,reset=True)
                 return {'error':'安全验证失败'}
             # 获取验证码
             code = get_verification_code(email_user, email_pass)
@@ -1588,7 +1605,7 @@ def main(incode, card_key, rtc_token, key):
                 print(f"无法从邮箱获取验证码: {mail}")
                 # 获取当前时间
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
                 return {'error': "邮箱登录/验证失败，请返回重试"}
 
             # 使用验证码完成其他操作
@@ -1596,13 +1613,13 @@ def main(incode, card_key, rtc_token, key):
             if(verification_response == '验证码不正确'):
                 # 获取当前时间
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
                 return {'error': "验证码不正确"}
             signup_response = signup(xid, mail, code, verification_response['verification_token'])
             print(signup_response)
             if (signup_response.get('error') == 'already_exists'):
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
                 return {'error':'该邮箱已被使用'}
 
             current_time = str(int(time.time()))
@@ -1623,7 +1640,7 @@ def main(incode, card_key, rtc_token, key):
                 # 获取当前时间
                 current_timestamp = time.time()
                 # 更新文件中的邮箱和密码状态 添加时间
-                update_file_status(r'./email.txt', email_user, email_pass, "登录成功(待定)", current_timestamp)
+                update_file_status(r'./email.txt', email_user, status = "登录成功(待定)", time = current_timestamp)
                 # 更新卡密使用次数
                 card_keys[card_key] -= 1
                 save_card_keys(card_keys)  # 保存更新后的卡密信息
@@ -1632,10 +1649,11 @@ def main(incode, card_key, rtc_token, key):
                 print(f"未知情况: {activation}")
                 # 获取当前时间
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, email_pass, "失败", current_timestamp)
+                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
                 return {'error': f"未知情况{activation}"}
-    except:
-        return {'error': "运行出错，请稍后重试"}
+    except Exception as e:
+        update_file_status(file_path, email_user,reset=True)
+        return {'error': f"运行出错，请稍后重试<br>错误信息：{str(e)}"}
 
 # 获取邀请开关状态
 @app.route('/get_limit_status', methods=['GET'])
