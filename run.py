@@ -424,7 +424,7 @@ def recent_emails():
                 if timestamp >= three_days_ago:
                     account_info = email.split('----')  # 使用 '----' 分隔账号信息
                     account = account_info[0]  # 获取邮箱部分
-                    fixed_password = "pik123"  # 固定密码 需要和下面邀请部分的密码一致
+                    fixed_password = "Bocchi002b"  # 固定密码 需要和下面邀请部分的密码一致
                     formatted_email = f"{account}----{fixed_password}"
                     recent_emails.append(formatted_email)
             except (ValueError, IndexError):
@@ -1027,7 +1027,7 @@ def signup(xid, mail, code, verification_token):
         "verification_code": code,
         "verification_token": verification_token,
         'name': f'qihang{random.randint(1, 1000000000)}vip',
-        "password": "pik123",
+        "password": "Bocchi002b",
         "client_id": "YvtoWO6GNHiuCl7x"
     }
     headers = {
