@@ -1,5 +1,5 @@
 import os
-import datetime
+# import datetime
 import requests
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -407,8 +407,8 @@ def recent_emails():
         return redirect(url_for('login'))
     
     emails = read_emails() 
-    now = datetime.datetime.now()
-    three_days_ago = now - datetime.timedelta(days=3)
+    now = datetime.now()
+    three_days_ago = now - timedelta(days=3)
     
     recent_emails = []
 
@@ -418,7 +418,7 @@ def recent_emails():
             parts = email.split(' ')  # 使用空格分隔
             try:
                 # 获取时间戳部分并转换为 datetime 对象
-                timestamp = datetime.datetime.fromtimestamp(float(parts[-1]))
+                timestamp = datetime.fromtimestamp(float(parts[-1]))
 
                 # 检查时间戳是否在最近三天内
                 if timestamp >= three_days_ago:
