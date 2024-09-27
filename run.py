@@ -494,16 +494,15 @@ def update_file_status(file_path, email, status=None, time=None, reset=False):
                 if line.strip().startswith(email) and "----" in line:
                     if reset:
                         # 恢复到初始状态
-                        initial_line = line.split(" ")[0].strip()
-                        file.write(f"{initial_line}\n")
+                        file.write(line.split(" ")[0].strip() + "\n")
                     else:
                         # 直接写入状态和时间戳
-                        initial_line = line.split(" ")[0].strip()
-                        file.write(f"{initial_line} {status} {time}\n")
+                        file.write(f"{line.split(' ')[0].strip()} {status} {time}\n")
                 else:
                     file.write(line)
     except Exception as e:
         print("更新文件状态失败:", e)
+
 
 
 # 纸鸢邮件api
