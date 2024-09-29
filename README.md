@@ -1,5 +1,6 @@
-![favicon](https://github.com/user-attachments/assets/44211cb0-90c3-4cc1-9ea3-5106e39ac3b3){: style="display: block; margin: 0 auto;" }
-
+<div style="text-align: center;">
+    <img src="https://github.com/user-attachments/assets/44211cb0-90c3-4cc1-9ea3-5106e39ac3b3" alt="favicon" style="max-width: 100px;">
+</div>
 
 
 
