@@ -1,5 +1,8 @@
 
-![favicon](https://github.com/user-attachments/assets/44211cb0-90c3-4cc1-9ea3-5106e39ac3b3)#pic_center  
+|     |
+|-----|
+| ![favicon](https://github.com/user-attachments/assets/44211cb0-90c3-4cc1-9ea3-5106e39ac3b3) |
+
 
 
 # 项目说明
