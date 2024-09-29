@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>PIKPAK临时会员邀请程序</title>
-    <script src="{{ url_for('static', filename='rtc_token.js') }}"></script>
+    
     <style>
         /* 移除页面底部 */
         .footer {
@@ -297,8 +297,8 @@
 
         .github-icon {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
+            bottom: 20px;
+            right: 20px;
             font-size: 24px;
             color: #333;
         }
@@ -394,12 +394,8 @@
                 </div>
             </form>
         </div>
-        <!-- GitHub 图标 -->
-        <a href="https://github.com/Bear-biscuit/pikpak_werbio" target="_blank" class="github-icon">
-            <i class="fab fa-github"></i>
-        </a>
     </div>
-
+    <script src="{{ url_for('static', filename='rtc_token.js') }}"></script>
     <script>
 
         const fields = [
