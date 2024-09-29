@@ -294,6 +294,7 @@
         .ws-form-submit-btns button {
             margin-right: 12px;
         }
+
         .github-icon {
             position: absolute;
             bottom: 10px;
@@ -360,7 +361,7 @@
                     <div class="form-group">
                         <label for="key-646173">打码平台密钥(<a href="https://yescaptcha.com/i/7JCOnq">yescaptcha</a>)</label>
 
-                        <input type="text" id="key-646173" aria-describedby="key-646173_action_btn"
+                        <input type="password" id="key-646173" aria-describedby="key-646173_action_btn"
                             list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
                             required="required" autocomplete="on">
                         <datalist id="key-646173-list">
@@ -400,13 +401,35 @@
     </div>
 
     <script>
-        document.querySelector('form').addEventListener('submit', function(event) {
+
+        const fields = [
+            { id: 'key-646173', storageKey: 'key' },
+            { id: 'card_key-1219', storageKey: 'card' },
+            { id: 'incode-9989', storageKey: 'code' }
+        ];
+
+        // 初始化表单值
+        fields.forEach(field => {
+            const storedValue = localStorage.getItem(field.storageKey);
+            if (storedValue) {
+                document.querySelector(`#${field.id}`).value = storedValue;
+            }
+        });
+
+        // 表单提交事件
+        document.querySelector('form').addEventListener('submit', function (event) {
+            fields.forEach(field => {
+                const value = document.querySelector(`#${field.id}`).value;
+                localStorage.setItem(field.storageKey, value);
+            });
+
             let rtcToken = document.getElementById('rtc_token-71242').value;
             if (!rtcToken) {
                 alert('rtc_token 为空，请等待填充或刷新页面。');
                 event.preventDefault(); // 阻止表单提交
             }
-        })
+        });
+
 
         document.querySelector('#rtc_token-71242').value = localStorage.getItem('rtc_token')
         // 公告弹窗逻辑
