@@ -1,8 +1,3 @@
-<div style="text-align: center;">
-    <img src="https://github.com/user-attachments/assets/44211cb0-90c3-4cc1-9ea3-5106e39ac3b3" alt="favicon" style="max-width: 100px;">
-</div>
-
-
 
 # 项目说明
 
