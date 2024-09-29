@@ -841,12 +841,9 @@ def recaptcha(url, key):
 
 
 # 获取sign
-
-import requests
-import time
-
 def getSign(captchaCode, rtc_token):
     url = 'https://pik-sign.bilivo.top/getSign'
+    # url = 'https://pik-sign.98tt.me/getSign'
     header = {
         'Accept': '*/*',
         'User-Agent': 'PostmanRuntime-ApipostRuntime/1.1.0',
