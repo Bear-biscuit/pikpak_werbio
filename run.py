@@ -1740,6 +1740,12 @@ def error():
     error_message = request.args.get('error_message')
     return render_template('error.html', error_message=error_message)
 
+@app.route('/get_non_logged_in_count', methods=['GET'])
+def get_non_logged_in_count():
+    emails = read_emails()
+    non_logged_in_emails = [email for email in emails if '登录成功' not in email and '失败' not in email and '使用中' not in email]
+    non_logged_in_count = len(non_logged_in_emails)
+    return jsonify(non_logged_in_count=non_logged_in_count)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

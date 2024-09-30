@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>PIKPAK临时会员邀请程序</title>
-    
+
     <style>
         /* 移除页面底部 */
         .footer {
@@ -312,7 +312,7 @@
 <body>
     <div class="pywebio_header">PIKPAK临时会员邀请</div>
     <div class="km_title">会员奖励次日到账 邀请超50人充不上需要换号 多刷无效<br> 连接超时请刷新重试</div>
-    <a id="a" href="/email">邮箱管理</a>
+    <a id="a" href="/email">后台管理</a>
 
     <!-- 公告弹窗 -->
     {% if is_enabled %}
@@ -324,9 +324,9 @@
         </div>
     </div>
     {% endif %}
-
+    
     <div class="card" style="height: unset; width: unset;">
-        <h5 class="card-header"></h5>
+        <h5 class="card-header">剩余邮箱: <span id="count" style="color: #28a745;">0</span></h5>
         <div class="card-body">
             <form action="/submit" method="POST">
                 <div class="input-container">
@@ -390,6 +390,7 @@
                 <div class="ws-form-submit-btns">
                     <button type="submit" class="btn btn-primary">提交</button>
                     <button type="reset" class="btn btn-warning">重置</button>
+
 
                 </div>
             </form>
@@ -465,6 +466,22 @@
             }, 100);
         }
         {% endif %}
+    </script>
+    <script>
+        // 请求后台获取未登录邮箱数量并更新页面显示
+        function refreshCount() {
+            fetch('/get_non_logged_in_count')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('count').innerText = data.non_logged_in_count;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // 页面加载完成后自动获取数据
+        window.onload = function () {
+            refreshCount();
+        };
     </script>
 </body>
 
