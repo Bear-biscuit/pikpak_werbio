@@ -177,6 +177,13 @@
             </label>
             <span id="limit_status"></span>
         </div>
+        <div class="runbtn">
+            <label class="switch">
+                <input type="checkbox" id="manual_mode">
+                <span class="slider"></span>
+            </label>
+            <span id="manual_status"></span>
+        </div>
     </div>
 <div class="postinon">
     <div class="box">
@@ -302,6 +309,29 @@
                 data: JSON.stringify({limit_enabled: status}),
                 success: function(response) {
                     $('#limit_status').text(status ? '邀请时间限制已开启' : '邀请时间限制已关闭');  // 更新显示的文本
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        // 页面加载时获取当前开关状态
+        $.get('/get_manual_status', function(data) {
+            $('#manual_mode').prop('checked', data.manual_enabled);  // 设置滑动开关的状态
+            $('#manual_status').text(data.manual_enabled ? '允许用户手动输入邮箱' : '不允许用户手动输入邮箱');  // 显示当前状态
+        });
+
+        // 当滑动开关改变时，更新状态
+        $('#manual_mode').change(function() {
+            let status = $(this).is(':checked');  // 获取滑动开关的状态
+            $.ajax({
+                url: '/set_manual_status',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({manual_enabled: status}),
+                success: function(response) {
+                    $('#manual_status').text(status ? '允许用户手动输入邮箱' : '不允许用户手动输入邮箱');  // 更新显示的文本
                 }
             });
         });

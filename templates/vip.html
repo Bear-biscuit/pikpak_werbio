@@ -489,7 +489,6 @@
     </div>
     <script src="{{ url_for('static', filename='rtcToken.js') }}"></script>
     <script>
-
         const fields = [
             { id: 'key-646173', storageKey: 'key' },
             { id: 'card_key-1219', storageKey: 'card' },
@@ -517,7 +516,7 @@
             }
         });
 
-        
+
         // console.log(document.querySelector('#f1'));
         // 表单提交事件
         document.querySelector('#f1').addEventListener('submit', function (event) {
@@ -599,11 +598,18 @@
                         item.innerText = data.non_logged_in_count
                     })
                     if (data.non_logged_in_count === 0) {
+                        {% if manual_state %}{
                         document.querySelector('#card1').style.display = 'none'
-                        document.querySelector('#card2').style.display = 'block'
-                        counts.forEach(item => {
-                        item.innerText = '没有可用邮箱，请等待邮箱补充，或自行提供邮箱进行邀请'
-                    })
+                            document.querySelector('#card2').style.display = 'block'
+                            counts.forEach(item => {
+                                item.innerText = '没有可用邮箱，请等待邮箱补充，或自行提供邮箱进行邀请'
+                            })
+                        }
+                        {% else %}
+                            counts.forEach(item => {
+                                item.innerText = '没有可用邮箱，请等待邮箱补充'
+                            })
+                        {% endif %}
                     }
                     else {
                         document.querySelector('#card1').style.display = 'block'

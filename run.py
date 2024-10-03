@@ -1500,8 +1500,8 @@ def toggle_detection():
 # -------------------------- 主函数一系列网络请求--------------------------
 
 invitation_file = r'./config/invitation_config.json'
-
-# 读取JSON文件内容
+manual_file = r'./config/manual_config.json'
+# 读取邀请配置文件内容
 def load_config():
     if os.path.exists(invitation_file):
         with open(invitation_file, 'r') as f:
@@ -1509,9 +1509,22 @@ def load_config():
     else:
         return {"limit_enabled": True, "invitation_records": {}}
 
-# 保存配置到JSON文件
+# 保存配置到邀请配置文件
 def save_config(data):
     with open(invitation_file, 'w') as f:
+        json.dump(data, f)
+
+# 读取模式文件内容
+def load_manual_config():
+    if os.path.exists(manual_file):
+        with open(manual_file, 'r') as f:
+            return json.load(f)
+    else:
+        return {"manual_enabled": True}
+
+# 保存配置到J模式文件
+def save_manual_config(data):
+    with open(manual_file, 'w') as f:
         json.dump(data, f)
 
 # 获取中国时区
@@ -1651,6 +1664,11 @@ def main(incode, card_key, rtc_token, key):
         update_file_status(file_path, email_user,reset=True)
         return {'error': f"运行出错，请稍后重试<br>错误信息：{str(e)}"}
 def main2(incode,email_user, email_pass, rtc_token, key):
+    with open(manual_file, 'r') as f:
+        data = json.load(f)
+    manual_state = data.get('manual_enabled')  
+    if not manual_state:
+        return {'error': f"未开启此模式"}
     start_time = time.time()
 
     try:
@@ -1733,6 +1751,21 @@ def set_limit_status():
     save_config(config)
     return jsonify({"message": "开关状态已更新", "limit_enabled": status})
 
+# 获取手动模式开关状态
+@app.route('/get_manual_status', methods=['GET'])
+def get_manual_status():
+    config = load_manual_config()
+    return jsonify({"manual_enabled": config["manual_enabled"]})
+
+# 更新手动模式开关状态
+@app.route('/set_manual_status', methods=['POST'])
+def set_manual_status():
+    status = request.json.get("manual_enabled")
+    config = load_manual_config()
+    config["manual_enabled"] = status
+    save_manual_config(config)
+    return jsonify({"message": "开关状态已更新", "manual_enabled": status})
+
 # html页面
 @app.route('/')
 def vip():
@@ -1756,13 +1789,18 @@ def vip():
 
     except requests.exceptions.RequestException as e:
         print(f"API调用失败: {e}")
+    
+    with open(manual_file, 'r') as f:
+        data = json.load(f)
+    manual_state = data.get('manual_enabled')  
 
     # 渲染网页模板，传递公告状态和内容
     return render_template(
         'vip.html',
         is_enabled=is_enabled,
         announcement_title=announcement_title,
-        announcement_message=announcement_message
+        announcement_message=announcement_message,
+        manual_state = manual_state
     )
 
 @app.route('/submit', methods=['POST'])
