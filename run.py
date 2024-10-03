@@ -42,10 +42,10 @@ log.addFilter(RequestFilter())
 file_path = r'./email.txt'
 
 # 卡密文件路径
-card_keys_file = r'./card_keys.json'
+card_keys_file = r'./config/card_keys.json'
 
 # 公告内容文件
-JSON_FILE_PATH = r'./announcement.json'
+JSON_FILE_PATH = r'./config/announcement.json'
 
 # 读取公告
 def read_announcements():
@@ -1286,7 +1286,7 @@ def activation_code(access_token, captcha, xid, in_code):
 detection_active = False
 detection_thread = None
 detection_event = threading.Event()  # 用于检测任务是否完成 
-STATUS_FILE = 'status.json'
+STATUS_FILE = './config/status.json'
 file_lock = threading.Lock()
 # 读取txt文件并显示调试信息
 def read_status():
@@ -1499,7 +1499,7 @@ def toggle_detection():
 
 # -------------------------- 主函数一系列网络请求--------------------------
 
-invitation_file = r'./invitation_config.json'
+invitation_file = r'./config/invitation_config.json'
 
 # 读取JSON文件内容
 def load_config():
