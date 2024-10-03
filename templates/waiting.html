@@ -81,7 +81,7 @@
 </body>
 <script>
     $(document).ready(function() {
-        var processUrl = "{{ url_for('process') }}"; // 默认处理URL
+        var processUrl = "{{ session.get('url') }}"; // 默认处理URL
 
         // 页面加载完成后发送AJAX请求
         $.ajax({

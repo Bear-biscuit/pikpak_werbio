@@ -16,7 +16,7 @@
         }
 
         /* 页头样式 */
-        .pywebio_header {
+        .header {
             text-align: center;
             font-size: 26px;
             font-weight: bold;
@@ -59,7 +59,7 @@
             transform: translateY(-2px);
         }
 
-        .pywebio_header::before {
+        .header::before {
             content: "\f0e0";
             /* Font Awesome 信封图标的 Unicode */
             font-family: "Font Awesome 5 Free";
@@ -306,11 +306,19 @@
         .github-icon:hover {
             color: #000;
         }
+
+        #card1 {
+            display: block;
+        }
+
+        #card2 {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
-    <div class="pywebio_header">PIKPAK临时会员邀请</div>
+    <div class="header">PIKPAK临时会员邀请</div>
     <div class="km_title">会员奖励次日到账 邀请超50人充不上需要换号 多刷无效<br> 连接超时请刷新重试</div>
     <a id="a" href="/email">后台管理</a>
 
@@ -324,11 +332,11 @@
         </div>
     </div>
     {% endif %}
-    
-    <div class="card" style="height: unset; width: unset;">
+
+    <div id="card1" class="card" style="height: unset; width: unset;">
         <h5 class="card-header">剩余邮箱: <span id="count" style="color: #28a745;">0</span></h5>
         <div class="card-body">
-            <form action="/submit" method="POST">
+            <form id="f1" action="/submit" method="POST">
                 <div class="input-container">
                     <div class="form-group">
                         <label for="incode-9989">请输入你的邀请码6-8位数字:</label>
@@ -396,7 +404,90 @@
             </form>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='rtc_token.js') }}"></script>
+    <div id="card2" class="card" style="height: unset; width: unset;">
+        <h5 class="card-header">剩余邮箱: <span id="count" style="color: #28a745;">0</span></h5>
+        <div class="card-body">
+            <form id="f2" action="/submit1" method="POST">
+                <div class="input-container">
+                    <div class="form-group">
+                        <label for="incode-9989">请输入你的邀请码6-8位数字:</label>
+
+                        <input type="text" id="incode-9989" aria-describedby="incode-9989_action_btn"
+                            list="incode-9989-list" class="form-control" name="incode"
+                            placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字" required="required" auto_focus="true">
+                        <datalist id="incode-9989-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="incode-9989_help" class="form-text text-muted"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="email-user">请输入邮箱账号:</label>
+
+                        <input type="text" id="email-user" aria-describedby="email-user_action_btn"
+                            list="email-user-list" class="form-control" name="email-user" placeholder="仅支持开启pop3的邮箱"
+                            required="required">
+                        <datalist id="email-user-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="email-user_help" class="form-text text-muted"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="email-password">请输入邮箱密码:</label>
+
+                        <input type="text" id="email-password" aria-describedby="email-password_action_btn"
+                            list="email-password-list" class="form-control" name="email-password"
+                            placeholder="请输入邮箱密码/授权码" required="required">
+                        <datalist id="email-password-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="email-password_help" class="form-text text-muted"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="key-646173">打码平台密钥(<a href="https://yescaptcha.com/i/7JCOnq">yescaptcha</a>)</label>
+
+                        <input type="password" id="key-646173" aria-describedby="key-646173_action_btn"
+                            list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
+                            required="required" autocomplete="on">
+                        <datalist id="key-646173-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="key-646173_help" class="form-text text-muted"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="rtc_token-71242">请等待rtc_token自动填充:</label>
+
+                        <input type="text" readonly id="rtc_token-71242" aria-describedby="rtc_token-71242_action_btn"
+                            list="rtc_token-71242-list" class="form-control" name="rtc_token" placeholder="长时间没有填充就刷新页面"
+                            required="required">
+                        <datalist id="rtc_token-71242-list">
+
+                        </datalist>
+                        <div class="invalid-feedback"></div>
+                        <div class="valid-feedback"></div>
+
+                        <small id="rtc_token-71242_help" class="form-text text-muted"></small>
+                    </div>
+                </div>
+                <div class="ws-form-submit-btns">
+                    <button type="submit" class="btn btn-primary">提交</button>
+                    <button type="reset" class="btn btn-warning">重置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='rtcToken.js') }}"></script>
     <script>
 
         const fields = [
@@ -404,19 +495,45 @@
             { id: 'card_key-1219', storageKey: 'card' },
             { id: 'incode-9989', storageKey: 'code' }
         ];
+        const field1s = [
+            { id: 'key-646173', storageKey: 'key' },
+            { id: 'email-user', storageKey: 'user' },
+            { id: 'email-password', storageKey: 'password' },
+            { id: 'incode-9989', storageKey: 'code' }
+        ];
 
         // 初始化表单值
         fields.forEach(field => {
             const storedValue = localStorage.getItem(field.storageKey);
             if (storedValue) {
-                document.querySelector(`#${field.id}`).value = storedValue;
+                document.querySelector(`#f1 #${field.id}`).value = storedValue;
+            }
+        });
+        // 初始化表单值
+        field1s.forEach(field => {
+            const storedValue = localStorage.getItem(field.storageKey);
+            if (storedValue) {
+                document.querySelector(`#f2 #${field.id}`).value = storedValue;
             }
         });
 
+        
+        // console.log(document.querySelector('#f1'));
         // 表单提交事件
-        document.querySelector('form').addEventListener('submit', function (event) {
+        document.querySelector('#f1').addEventListener('submit', function (event) {
             fields.forEach(field => {
-                const value = document.querySelector(`#${field.id}`).value;
+                const value = document.querySelector(`#f1 #${field.id}`).value;
+                localStorage.setItem(field.storageKey, value);
+            });
+            let rtcToken = document.getElementById('rtc_token-71242').value;
+            if (!rtcToken) {
+                alert('rtc_token 为空，请等待填充或刷新页面。');
+                event.preventDefault(); // 阻止表单提交
+            }
+        });
+        document.querySelector('#f2').addEventListener('submit', function (event) {
+            field1s.forEach(field => {
+                const value = document.querySelector(`#f2 #${field.id}`).value;
                 localStorage.setItem(field.storageKey, value);
             });
 
@@ -427,8 +544,11 @@
             }
         });
 
-
-        document.querySelector('#rtc_token-71242').value = localStorage.getItem('rtc_token')
+        rtcs = document.querySelectorAll('#rtc_token-71242')
+        rtcs.forEach(item => {
+            item.value = localStorage.getItem('rtc_token')
+        })
+        // document.querySelectorAll('#rtc_token-71242').value = localStorage.getItem('rtc_token')
         // 公告弹窗逻辑
         {% if is_enabled %}
         // 获取弹窗和关闭按钮
@@ -473,7 +593,22 @@
             fetch('/get_non_logged_in_count')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('count').innerText = data.non_logged_in_count;
+
+                    counts = document.querySelectorAll('#count')
+                    counts.forEach(item => {
+                        item.innerText = data.non_logged_in_count
+                    })
+                    if (data.non_logged_in_count === 0) {
+                        document.querySelector('#card1').style.display = 'none'
+                        document.querySelector('#card2').style.display = 'block'
+                        counts.forEach(item => {
+                        item.innerText = '没有可用邮箱，请等待邮箱补充，或自行提供邮箱进行邀请'
+                    })
+                    }
+                    else {
+                        document.querySelector('#card1').style.display = 'block'
+                        document.querySelector('#card2').style.display = 'none'
+                    }
                 })
                 .catch(error => console.error('Error:', error));
         }

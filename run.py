@@ -842,8 +842,8 @@ def recaptcha(url, key):
 
 # 获取sign
 def getSign(captchaCode, rtc_token):
-    url = 'https://pik-sign.bilivo.top/getSign'
-    # url = 'https://pik-sign.98tt.me/getSign'
+    # url = 'https://pik-sign.bilivo.top/getSign'
+    url = 'https://pik-sign.98tt.me/getSign'
     header = {
         'Accept': '*/*',
         'User-Agent': 'PostmanRuntime-ApipostRuntime/1.1.0',
@@ -893,7 +893,7 @@ def report(xid, captcha_token, google_token, request_id, sign,rtc_token):
     while retries < max_retries:
         try:
             response2 =  requests.request("GET", url, params=querystring,timeout=5)
-
+            print(response2)
             response_data = response2.json()
             print(response_data)
             return response_data
@@ -1650,6 +1650,73 @@ def main(incode, card_key, rtc_token, key):
     except Exception as e:
         update_file_status(file_path, email_user,reset=True)
         return {'error': f"运行出错，请稍后重试<br>错误信息：{str(e)}"}
+def main2(incode,email_user, email_pass, rtc_token, key):
+    start_time = time.time()
+
+    try:
+        xid = str(uuid.uuid4()).replace("-", "")
+        mail = email_user
+        # 执行初始化安全验证
+        print(mail)
+        Init = init(xid, mail)
+        if (Init == '连接超时'):
+            return {'error': "连接超时,请返回重试，多次失败请联系管理员查看代理池"}
+        if 'error' in Init.keys():
+            return {'error': "账号或设备操作过于频繁，请稍后重试"}
+        captcha_token = Init['captcha_token']
+        if 'url' in Init.keys():
+            google_token = recaptcha(Init['url'],key)
+            if not google_token:
+                return {'error': "请检查你的打码平台密钥"}
+            signGet = getSign(captcha_token, rtc_token)
+            if(signGet == '超时'):
+                return {'error': "获取sign超时,请返回重试"}
+            sign = signGet['data']['sign']
+            request_id = signGet['data']['request_id']
+            rtc_token = signGet['data']['rtc_token']
+            captoken = captcha_token
+            captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)
+            if (captcha_token['error'] == 'invalid_argument'):
+                return {'error':'参数无效,请返回重试'}
+        Verification = verification(captcha_token['captcha_token'], xid, mail)
+        if(Verification == '连接超时'):
+            return {'error':'发送验证码超时'}
+        if 'error' in Verification.keys():
+            return {'error':'安全验证失败'}
+        # 获取验证码
+        code = get_verification_code(email_user, email_pass)
+
+        if (code == '超时'):
+            print(f"无法从邮箱获取验证码: {mail}")
+            # 获取当前时间
+            return {'error': "邮箱登录/验证失败，请更换邮箱"}
+
+        # 使用验证码完成其他操作
+        verification_response = verify(xid, Verification['verification_id'], code)
+        if(verification_response == '验证码不正确'):
+            return {'error': "验证码不正确"}
+        signup_response = signup(xid, mail, code, verification_response['verification_token'])
+        print(signup_response)
+        if (signup_response.get('error') == 'already_exists'):
+            return {'error':'该邮箱已被使用，请更换邮箱'}
+
+        current_time = str(int(time.time()))
+        sign = get_sign(xid, current_time)
+        init1_response = init1(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
+        invite(signup_response['access_token'],init1_response['captcha_token'], xid)
+        init2_response = init2(xid, signup_response['access_token'], signup_response['sub'], sign, current_time)
+        activation = activation_code(signup_response['access_token'], init2_response['captcha_token'], xid, incode)
+        # print(activation)
+        end_time = time.time()
+        run_time = f'{(end_time - start_time):.2f}'
+        if activation.get('add_days') == 0:
+            print(f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’')
+            return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
+        else:
+            print(f"未知情况: {activation}")
+            return {'error': f"未知情况{activation}"}
+    except Exception as e:
+        return {'error': f"运行出错，请稍后重试<br>错误信息：{str(e)}"}
 
 # 获取邀请开关状态
 @app.route('/get_limit_status', methods=['GET'])
@@ -1708,6 +1775,22 @@ def submit():
     session['card_key'] = card_key
     session['rtc_token'] = rtc_token
     session['key'] = key
+    session['url'] = url_for('process')
+
+    return redirect(url_for('waiting'))
+@app.route('/submit1', methods=['POST'])
+def submit1():
+    incode = request.form.get('incode')
+    email_user = request.form.get('email-user')
+    email_password = request.form.get('email-password')
+    rtc_token = request.form.get('rtc_token')
+    key = request.form.get('key')
+    session['incode'] = incode
+    session['email-user'] = email_user
+    session['email-password'] = email_password
+    session['rtc_token'] = rtc_token
+    session['key'] = key
+    session['url'] = url_for('process1')
 
     return redirect(url_for('waiting'))
 
@@ -1721,6 +1804,20 @@ def process():
     key = session.get('key')
     # 调用主逻辑，获取结果
     result = main(incode, card_key, rtc_token, key)
+    # 返回处理结果，重定向到相应页面
+    if 'error' in result:
+        return jsonify({'redirect': url_for('error', error_message=result['error'])})
+    return jsonify({'redirect': url_for('result', result_message=result['message'])})
+@app.route('/process1', methods=['POST'])
+def process1():
+    incode = session.get('incode')
+    email_user = session.get('email-user')
+    email_password = session.get('email-password')
+    rtc_token = session.get('rtc_token')
+    key = session.get('key')
+    # 调用主逻辑，获取结果
+    # print(incode, email_user,email_password, rtc_token, key)
+    result = main2(incode, email_user,email_password, rtc_token, key)
     # 返回处理结果，重定向到相应页面
     if 'error' in result:
         return jsonify({'redirect': url_for('error', error_message=result['error'])})
