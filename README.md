@@ -19,9 +19,10 @@ sign获取失败，请自行更改代码中的接口地址
 ![image](https://github.com/user-attachments/assets/29f795d0-bc14-48a7-884b-293c2701a613)
 
 ### 会员邀请主程序
-![image](https://github.com/user-attachments/assets/74b21d70-e200-4783-8e96-75f581e1f8ff)  
+![image](https://github.com/user-attachments/assets/d2d6704b-03af-46cb-9ad4-68ecf4c8b282)  
 
-
+剩余邮箱为空时可以让用户手动输入邮箱进行邀请  
+![image](https://github.com/user-attachments/assets/2b3aa86f-880b-404b-add6-59dccb20f9fd)  
 
 ### 代理池  
 代理池项目:[ProxyPoolWithUI](https://github.com/OxOOo/ProxyPoolWithUI?tab=readme-ov-file)  
@@ -32,12 +33,11 @@ sign获取失败，请自行更改代码中的接口地址
 请在登录页部分，更改默认账号密码  
 ![image](https://github.com/user-attachments/assets/2f890414-ceea-44f4-b07e-88de4f3c9ef0)
 
-### 邮箱管理页面
-可以查看和管理已使用和未使用的邮箱  
-![image](https://github.com/user-attachments/assets/6d37f883-857a-458b-95a0-e2b1da9f3558)
-![image](https://github.com/user-attachments/assets/f3628ced-bb93-44b3-8987-4b6f6cebf9aa)
-邮箱测活，会自动删除失效的邮箱
-![image](https://github.com/user-attachments/assets/241518f1-c608-446f-829d-aebd7f5e951e)
+### 后台管理页面
+包含一些配置开关，可以查看和管理已使用和未使用的邮箱  
+![image](https://github.com/user-attachments/assets/c99085cd-cc94-495e-90fb-40936106502e)
+
+![image](https://github.com/user-attachments/assets/d701587a-e496-4f61-a857-9a8a352aed90)  
 
 ### 添加邮箱页面
 可以手动添加邮箱信息，也可以从下方邮箱卡购买网站中购买邮箱卡，注意是邮箱卡，不要买成邮箱  
