@@ -313,9 +313,10 @@
 <body>
     <div id="card1" class="card" style="height: unset; width: unset;">
         <h5 class="card-header">请手动登录邮箱去获取验证码</h5>
+        <h5 class="card-header">如果邮箱不可用就随便输入一个验证码进去，方便后台标记失效的邮箱</h5>
         <p>账号:{{ mail | safe }}</p>
         <p>密码:{{ password | safe }}</p>
-        <a target="_blank" href="https://outlook.live.com/">微软邮箱地址</a>
+        <p><a target="_blank" href="https://outlook.live.com/">微软邮箱地址</a></p>
         <div class="card-body">
             <form id="f1" action="/next" method="POST">
                 <div class="input-container">
