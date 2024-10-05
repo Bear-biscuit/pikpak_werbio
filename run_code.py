@@ -1895,48 +1895,59 @@ def process1():
         session['mail'] = result['mail']
         session['start_time'] = result['start_time']
         session['incode'] = result['incode']
+        session['password'] = result['password']
         return jsonify({'redirect': url_for('code2', mail=result['mail'],password=result['password'])})
 
     return jsonify({'redirect': url_for('result', result_message=result['message'])})
 
 @app.route('/next1', methods=['POST'])
 def next1():
+    code = request.form.get('code')
+    session['code'] = code
+    session['url'] = url_for('codeprocess')
+
+    return redirect(url_for('waiting'))
+
+@app.route('/codeprocess', methods=['POST'])
+def codeprocess():
     xid = session.get('xid')
     Verification = session.get('Verification')
     mail = session.get('mail')
     start_time = session.get('start_time')
     incode = session.get('incode')
-    code = request.form.get('code')
+    code = session.get('code')
     invitation_records = session.get('invitation_records')
     config = session.get('config')
     card_key = session.get('card_key')
     result = main3(xid, Verification, code, mail, start_time, incode,invitation_records,config,card_key)
-
     # 返回处理结果，重定向到相应页面
     if 'error' in result:
-        # 直接重定向到错误页面
-        return redirect(url_for('error', error_message=result['error']))
-
-    # 直接重定向到结果页面
-    return redirect(url_for('result', result_message=result['message']))
+        return jsonify({'redirect': url_for('error', error_message=result['error'])})
+    
+    return jsonify({'redirect': url_for('result', result_message=result['message'])})
 
 @app.route('/next2', methods=['POST'])
 def next2():
+    code = request.form.get('code')
+    session['code'] = code
+    session['url'] = url_for('codeprocess1')
+
+    return redirect(url_for('waiting'))
+
+@app.route('/codeprocess1', methods=['POST'])
+def codeprocess1():
     xid = session.get('xid')
     Verification = session.get('Verification')
     mail = session.get('mail')
     start_time = session.get('start_time')
     incode = session.get('incode')
-    code = request.form.get('code')
+    code = session.get('code')
     result = main4(xid, Verification, code, mail, start_time, incode)
-
     # 返回处理结果，重定向到相应页面
     if 'error' in result:
-        # 直接重定向到错误页面
-        return redirect(url_for('error', error_message=result['error']))
-
-    # 直接重定向到结果页面
-    return redirect(url_for('result', result_message=result['message']))
+        return jsonify({'redirect': url_for('error', error_message=result['error'])})
+    
+    return jsonify({'redirect': url_for('result', result_message=result['message'])})
 
 @app.route('/waiting')
 def waiting():
