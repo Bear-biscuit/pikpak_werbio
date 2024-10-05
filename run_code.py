@@ -1873,9 +1873,11 @@ def process():
         session['invitation_records'] = result['invitation_records']
         session['config'] = result['config']
         session['card_key'] = result['card_key']
+        session['url'] = url_for('codeprocess')
         print(result['password'])
-        return jsonify({'redirect': url_for('code1', mail=result['mail'],password=result['password'])})
+        return jsonify({'redirect': url_for('code', mail=result['mail'],password=result['password'])})
     return jsonify({'redirect': url_for('result', result_message=result['message'])})
+
 @app.route('/process1', methods=['POST'])
 def process1():
     incode = session.get('incode')
@@ -1896,16 +1898,21 @@ def process1():
         session['start_time'] = result['start_time']
         session['incode'] = result['incode']
         session['password'] = result['password']
-        return jsonify({'redirect': url_for('code2', mail=result['mail'],password=result['password'])})
+        session['url'] = url_for('codeprocess1')
+        return jsonify({'redirect': url_for('code', mail=result['mail'],password=result['password'])})
 
     return jsonify({'redirect': url_for('result', result_message=result['message'])})
 
-@app.route('/next1', methods=['POST'])
+@app.route('/code')
+def code():
+    mail = request.args.get('mail')
+    password = request.args.get('password')
+    return render_template('code.html',mail=mail,password=password)
+
+@app.route('/next', methods=['POST'])
 def next1():
     code = request.form.get('code')
     session['code'] = code
-    session['url'] = url_for('codeprocess')
-
     return redirect(url_for('waiting'))
 
 @app.route('/codeprocess', methods=['POST'])
@@ -1926,14 +1933,6 @@ def codeprocess():
     
     return jsonify({'redirect': url_for('result', result_message=result['message'])})
 
-@app.route('/next2', methods=['POST'])
-def next2():
-    code = request.form.get('code')
-    session['code'] = code
-    session['url'] = url_for('codeprocess1')
-
-    return redirect(url_for('waiting'))
-
 @app.route('/codeprocess1', methods=['POST'])
 def codeprocess1():
     xid = session.get('xid')
@@ -1952,18 +1951,6 @@ def codeprocess1():
 @app.route('/waiting')
 def waiting():
     return render_template('waiting.html')
-
-@app.route('/code1')
-def code1():
-    mail = request.args.get('mail')
-    password = request.args.get('password')
-    return render_template('code1.html',mail=mail,password=password)
-
-@app.route('/code2')
-def code2():
-    mail = request.args.get('mail')
-    password = request.args.get('password')
-    return render_template('code2.html',mail=mail,password=password)
 
 @app.route('/result')
 def result():

@@ -306,21 +306,17 @@
         .github-icon:hover {
             color: #000;
         }
-        a {
-            text-decoration: none;
-            color: #28a745;
-        }
     </style>
 </head>
 
 <body>
-    <div id="card2" class="card" style="height: unset; width: unset;">
+    <div id="card1" class="card" style="height: unset; width: unset;">
         <h5 class="card-header">请手动登录邮箱去获取验证码</h5>
         <p>账号:{{ mail | safe }}</p>
         <p>密码:{{ password | safe }}</p>
-        <p><a href="https://outlook.live.com/">点我跳转到微软邮箱</a></p>
+        <a href="https://outlook.live.com/">微软邮箱地址</a>
         <div class="card-body">
-            <form id="f1" action="/next2" method="POST">
+            <form id="f1" action="/next" method="POST">
                 <div class="input-container">
                     <div class="form-group">
                         <label for="code-9989">请输入pikpak验证码</label>
