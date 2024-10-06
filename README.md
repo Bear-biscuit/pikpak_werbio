@@ -3,10 +3,6 @@
 
 ## pikpak会员自动邀请程序
 感谢AAA大佬提供的[参数接口](https://doc.apipost.net/docs/detail/314e89ad4864000?target_id=34e75066b2f002)  
-sign获取失败，请自行更改代码中的接口地址  
-![image](https://github.com/user-attachments/assets/abd9b314-1389-4c73-a4f4-ea8bfadbf5ba)
-
-![image](https://github.com/user-attachments/assets/9b91a21d-4a51-4f1a-a95c-0ea0ca974dd4)  
 
 ## 原作者：B站纸鸢的花语
 倒卖 牡蛎😘~~~
@@ -89,7 +85,12 @@ sign获取失败，请自行更改代码中的接口地址
 ```
 pip install -r requirements.txt
 ```  
-运行 run.py
+自动获取验证码版本，运行 run.py
 ```
 python run.py
 ```
+手动获取验证码版本，运行 run_code.py
+```
+python run_code.py
+```
+
