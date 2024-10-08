@@ -12,176 +12,198 @@
 </head>
 
 <body>
-    <div class="header">PIKPAK临时会员邀请</div>
-    <div class="km_title">会员奖励次日到账 邀请超50人充不上需要换号 多刷无效<br> 连接超时请刷新重试</div>
-    <a id="a" href="/email">后台管理</a>
+    <div class="background"></div>
+    <div class="stars-container"></div>
+    <div class="content">
+        <div class="header">PIKPAK临时会员邀请</div>
+        <div class="km_title">会员奖励次日到账 邀请超50人充不上需要换号 多刷无效<br> 连接超时请刷新重试</div>
+        <a id="a" href="/email">后台管理</a>
 
-    <!-- 公告弹窗 -->
-    {% if is_enabled %}
-    <div id="announcementModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModal">&times;</span>
-            <h2>{{ announcement_title }}</h2>
-            {{ announcement_message | safe }}
+        <!-- 公告弹窗 -->
+        {% if is_enabled %}
+        <div id="announcementModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h2>{{ announcement_title }}</h2>
+                {{ announcement_message | safe }}
+            </div>
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <div id="card1" class="card" style="height: unset; width: unset;">
-        <h5 class="card-header">剩余邮箱: <span id="count" style="color: #28a745;">0</span></h5>
-        <div class="card-body">
-            <form id="f1" action="/submit" method="POST">
-                <div class="input-container">
-                    <div class="form-group">
-                        <label for="incode-9989">请输入你的邀请码6-8位数字:</label>
+        <div id="card1" class="card" style="height: unset; width: unset;">
+            <h5 class="card-header">剩余邮箱: <span id="count" style="color: #28a745;">0</span></h5>
+            <div class="card-body">
+                <form id="f1" action="/submit" method="POST">
+                    <div class="input-container">
+                        <div class="form-group">
+                            <label for="incode-9989">请输入你的邀请码6-8位数字:</label>
 
-                        <input type="text" id="incode-9989" aria-describedby="incode-9989_action_btn"
-                            list="incode-9989-list" class="form-control" name="incode"
-                            placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字" required="required" auto_focus="true">
-                        <datalist id="incode-9989-list">
+                            <input type="text" id="incode-9989" aria-describedby="incode-9989_action_btn"
+                                list="incode-9989-list" class="form-control" name="incode"
+                                placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字" required="required" auto_focus="true">
+                            <datalist id="incode-9989-list">
 
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
 
-                        <small id="incode-9989_help" class="form-text text-muted"></small>
+                            <small id="incode-9989_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="card_key-1219">请输入卡密:</label>
+
+                            <input type="text" id="card_key-1219" aria-describedby="card_key-1219_action_btn"
+                                list="card_key-1219-list" class="form-control" name="card_key" placeholder="请输入卡密"
+                                required="required">
+                            <datalist id="card_key-1219-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="card_key-1219_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="key-646173">打码平台密钥(<a
+                                    href="https://yescaptcha.com/i/7JCOnq">yescaptcha</a>)</label>
+
+                            <input type="password" id="key-646173" aria-describedby="key-646173_action_btn"
+                                list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
+                                required="required" autocomplete="on">
+                            <datalist id="key-646173-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="key-646173_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="rtc_token-71242">请等待rtc_token自动填充:</label>
+
+                            <input type="text" readonly id="rtc_token-71242"
+                                aria-describedby="rtc_token-71242_action_btn" list="rtc_token-71242-list"
+                                class="form-control" name="rtc_token" placeholder="长时间没有填充就刷新页面" required="required">
+                            <datalist id="rtc_token-71242-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="rtc_token-71242_help" class="form-text text-muted"></small>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="card_key-1219">请输入卡密:</label>
+                    <div class="ws-form-submit-btns">
+                        <button type="submit" class="btn btn-primary">提交</button>
+                        <button type="reset" class="btn btn-warning">重置</button>
 
-                        <input type="text" id="card_key-1219" aria-describedby="card_key-1219_action_btn"
-                            list="card_key-1219-list" class="form-control" name="card_key" placeholder="请输入卡密"
-                            required="required">
-                        <datalist id="card_key-1219-list">
 
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
-
-                        <small id="card_key-1219_help" class="form-text text-muted"></small>
                     </div>
-                    <div class="form-group">
-                        <label for="key-646173">打码平台密钥(<a href="https://yescaptcha.com/i/7JCOnq">yescaptcha</a>)</label>
-
-                        <input type="password" id="key-646173" aria-describedby="key-646173_action_btn"
-                            list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
-                            required="required" autocomplete="on">
-                        <datalist id="key-646173-list">
-
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
-
-                        <small id="key-646173_help" class="form-text text-muted"></small>
-                    </div>
-                    <div class="form-group">
-                        <label for="rtc_token-71242">请等待rtc_token自动填充:</label>
-
-                        <input type="text" readonly id="rtc_token-71242" aria-describedby="rtc_token-71242_action_btn"
-                            list="rtc_token-71242-list" class="form-control" name="rtc_token" placeholder="长时间没有填充就刷新页面"
-                            required="required">
-                        <datalist id="rtc_token-71242-list">
-
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
-
-                        <small id="rtc_token-71242_help" class="form-text text-muted"></small>
-                    </div>
-                </div>
-                <div class="ws-form-submit-btns">
-                    <button type="submit" class="btn btn-primary">提交</button>
-                    <button type="reset" class="btn btn-warning">重置</button>
-
-
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
-    <div id="card2" class="card" style="height: unset; width: unset;">
-        <h5 class="card-header">剩余邮箱: <span id="count" style="color: #28a745;">0</span></h5>
-        <div class="card-body">
-            <form id="f2" action="/submit1" method="POST">
-                <div class="input-container">
-                    <div class="form-group">
-                        <label for="incode-9989">请输入你的邀请码6-8位数字:</label>
+        <div id="card2" class="card" style="height: unset; width: unset;">
+            <h5 class="card-header">剩余邮箱: <span id="count" style="color: #28a745;">0</span></h5>
+            <div class="card-body">
+                <form id="f2" action="/submit1" method="POST">
+                    <div class="input-container">
+                        <div class="form-group">
+                            <label for="incode-9989">请输入你的邀请码6-8位数字:</label>
 
-                        <input type="text" id="incode-9989" aria-describedby="incode-9989_action_btn"
-                            list="incode-9989-list" class="form-control" name="incode"
-                            placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字" required="required" auto_focus="true">
-                        <datalist id="incode-9989-list">
+                            <input type="text" id="incode-9989" aria-describedby="incode-9989_action_btn"
+                                list="incode-9989-list" class="form-control" name="incode"
+                                placeholder="打开pikpak我的界面-引荐奖励计划-获取邀请码数字" required="required" auto_focus="true">
+                            <datalist id="incode-9989-list">
 
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
 
-                        <small id="incode-9989_help" class="form-text text-muted"></small>
+                            <small id="incode-9989_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="email-user">请输入邮箱账号:</label>
+
+                            <input type="text" id="email-user" aria-describedby="email-user_action_btn"
+                                list="email-user-list" class="form-control" name="email-user" placeholder="仅支持开启pop3的邮箱"
+                                required="required">
+                            <datalist id="email-user-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="email-user_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="email-password">请输入邮箱密码:</label>
+
+                            <input type="text" id="email-password" aria-describedby="email-password_action_btn"
+                                list="email-password-list" class="form-control" name="email-password"
+                                placeholder="请输入邮箱密码/授权码" required="required">
+                            <datalist id="email-password-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="email-password_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="key-646173">打码平台密钥(<a
+                                    href="https://yescaptcha.com/i/7JCOnq">yescaptcha</a>)</label>
+
+                            <input type="password" id="key-646173" aria-describedby="key-646173_action_btn"
+                                list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
+                                required="required" autocomplete="on">
+                            <datalist id="key-646173-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="key-646173_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="rtc_token-71242">请等待rtc_token自动填充:</label>
+
+                            <input type="text" readonly id="rtc_token-71242"
+                                aria-describedby="rtc_token-71242_action_btn" list="rtc_token-71242-list"
+                                class="form-control" name="rtc_token" placeholder="长时间没有填充就刷新页面" required="required">
+                            <datalist id="rtc_token-71242-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="rtc_token-71242_help" class="form-text text-muted"></small>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="email-user">请输入邮箱账号:</label>
-
-                        <input type="text" id="email-user" aria-describedby="email-user_action_btn"
-                            list="email-user-list" class="form-control" name="email-user" placeholder="仅支持开启pop3的邮箱"
-                            required="required">
-                        <datalist id="email-user-list">
-
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
-
-                        <small id="email-user_help" class="form-text text-muted"></small>
+                    <div class="ws-form-submit-btns">
+                        <button type="submit" class="btn btn-primary">提交</button>
+                        <button type="reset" class="btn btn-warning">重置</button>
                     </div>
-                    <div class="form-group">
-                        <label for="email-password">请输入邮箱密码:</label>
-
-                        <input type="text" id="email-password" aria-describedby="email-password_action_btn"
-                            list="email-password-list" class="form-control" name="email-password"
-                            placeholder="请输入邮箱密码/授权码" required="required">
-                        <datalist id="email-password-list">
-
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
-
-                        <small id="email-password_help" class="form-text text-muted"></small>
-                    </div>
-                    <div class="form-group">
-                        <label for="key-646173">打码平台密钥(<a href="https://yescaptcha.com/i/7JCOnq">yescaptcha</a>)</label>
-
-                        <input type="password" id="key-646173" aria-describedby="key-646173_action_btn"
-                            list="key-646173-list" class="form-control" name="key" placeholder="请输入你的密钥"
-                            required="required" autocomplete="on">
-                        <datalist id="key-646173-list">
-
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
-
-                        <small id="key-646173_help" class="form-text text-muted"></small>
-                    </div>
-                    <div class="form-group">
-                        <label for="rtc_token-71242">请等待rtc_token自动填充:</label>
-
-                        <input type="text" readonly id="rtc_token-71242" aria-describedby="rtc_token-71242_action_btn"
-                            list="rtc_token-71242-list" class="form-control" name="rtc_token" placeholder="长时间没有填充就刷新页面"
-                            required="required">
-                        <datalist id="rtc_token-71242-list">
-
-                        </datalist>
-                        <div class="invalid-feedback"></div>
-                        <div class="valid-feedback"></div>
-
-                        <small id="rtc_token-71242_help" class="form-text text-muted"></small>
-                    </div>
-                </div>
-                <div class="ws-form-submit-btns">
-                    <button type="submit" class="btn btn-primary">提交</button>
-                    <button type="reset" class="btn btn-warning">重置</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
     <script src="{{ url_for('static', filename='rtcToken.js') }}"></script>
+    <script>
+        function createStar() {
+            const star = document.createElement('div');
+            star.className = 'floating-element';
+            star.innerHTML = '<div class="star"></div>';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDuration = `${3 + Math.random() * 2}s`;
+            star.style.animationDelay = `${Math.random() * 2}s`;
+            document.querySelector('.stars-container').appendChild(star);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            createStar();
+        }
+    </script>
     <script>
         const fields = [
             { id: 'key-646173', storageKey: 'key' },
@@ -292,17 +314,17 @@
                         item.innerText = data.non_logged_in_count
                     })
                     if (data.non_logged_in_count === 0) {
-                        {% if manual_state %}{
-                        document.querySelector('#card1').style.display = 'none'
+                        {% if manual_state %} {
+                            document.querySelector('#card1').style.display = 'none'
                             document.querySelector('#card2').style.display = 'block'
                             counts.forEach(item => {
                                 item.innerText = '没有可用邮箱，请等待邮箱补充，或自行提供邮箱进行邀请'
                             })
                         }
                         {% else %}
-                            counts.forEach(item => {
-                                item.innerText = '没有可用邮箱，请等待邮箱补充'
-                            })
+                        counts.forEach(item => {
+                            item.innerText = '没有可用邮箱，请等待邮箱补充'
+                        })
                         {% endif %}
                     }
                     else {
@@ -317,7 +339,7 @@
         window.onload = function () {
             refreshCount();
         };
-        document.addEventListener("DOMContentLoaded",function(){!function(){var e=["createElement","appendChild","querySelector","className","fab fa-github","github-icon","target","_blank","href","https://github.com/Bear-biscuit/pikpak_werbio"];function t(t){return e[t]}var n=document[t(0)]("div"),a=document[t(0)]("a");a[t(8)]=t(9),a[t(7)]=t(6),a[t(3)]=t(5);var o=document[t(0)]("i");o[t(3)]=t(4),a[t(1)](o),n[t(1)](a),document[t(2)]("#card1")[t(1)](n);var c=".github-icon{position:absolute;bottom:20px;right:20px;font-size:24px;color:#333;display:block!important;}.github-icon:hover{color:#000}",d=document.createElement("style");d.type="text/css",d.styleSheet?d.styleSheet.cssText=c:d.appendChild(document.createTextNode(c)),document.head.appendChild(d)}()});
+        document.addEventListener("DOMContentLoaded", function () { !function () { var e = ["createElement", "appendChild", "querySelector", "className", "fab fa-github", "github-icon", "target", "_blank", "href", "https://github.com/Bear-biscuit/pikpak_werbio"]; function t(t) { return e[t] } var n = document[t(0)]("div"), a = document[t(0)]("a"); a[t(8)] = t(9), a[t(7)] = t(6), a[t(3)] = t(5); var o = document[t(0)]("i"); o[t(3)] = t(4), a[t(1)](o), n[t(1)](a), document[t(2)]("#card1")[t(1)](n); var c = ".github-icon{position:absolute;bottom:20px;right:20px;font-size:24px;color:#333;display:block!important;}.github-icon:hover{color:#000}", d = document.createElement("style"); d.type = "text/css", d.styleSheet ? d.styleSheet.cssText = c : d.appendChild(document.createTextNode(c)), document.head.appendChild(d) }() });
     </script>
 </body>
 

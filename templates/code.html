@@ -30,10 +30,34 @@
         .container {
             max-width: 480px;
             width: 100%;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.2);
+            /* 半透明背景 */
+            backdrop-filter: blur(15px);
+            /* 背景模糊效果 */
+            -webkit-backdrop-filter: blur(15px);
+            /* Safari 兼容 */
             border-radius: 20px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
             padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            /* 添加微妙的边框 */
+            position: relative;
+            overflow: hidden;
+            /* 确保内部元素不会超出圆角 */
+        }
+
+        /* 添加一个微妙的渐变效果以增强深度感 */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.3) 0%,
+                    rgba(255, 255, 255, 0.1) 100%);
+            z-index: -1;
         }
 
         .header {
@@ -166,49 +190,156 @@
             animation: float 3s ease-in-out infinite;
         }
     </style>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            z-index: 1;
+        }
+
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .content {
+            position: relative;
+            z-index: 3;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .floating-element {
+            position: absolute;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .star {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid rgba(255, 215, 0, 0.6);
+            position: absolute;
+            transform: rotate(35deg);
+        }
+
+        .star:before {
+            border-bottom: 20px solid rgba(255, 215, 0, 0.6);
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            position: absolute;
+            height: 0;
+            width: 0;
+            top: -10px;
+            left: -10px;
+            content: '';
+            transform: rotate(-35deg);
+        }
+
+        .star:after {
+            position: absolute;
+            display: block;
+            color: rgba(255, 215, 0, 0.6);
+            top: 3px;
+            left: -18px;
+            width: 0px;
+            height: 0px;
+            border-right: 20px solid transparent;
+            border-bottom: 15px solid rgba(255, 215, 0, 0.6);
+            border-left: 20px solid transparent;
+            transform: rotate(-70deg);
+            content: '';
+        }
+    </style>
+
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="floating-icon">
-                <i class="fas fa-envelope"></i>
+    <div class="background"></div>
+    <div class="stars-container"></div>
+    <div class="content">
+        <div class="container">
+            <div class="header">
+                <div class="floating-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h1>PIKPAK 验证</h1>
+                <p>请登录邮箱获取验证码</p>
+                <p>(需在三分钟内完成输入)</p>
             </div>
-            <h1>PIKPAK 验证</h1>
-            <p>请登录邮箱获取验证码</p>
-            <p>(需在三分钟内完成输入)</p>
+
+            <div class="info-box">
+                <div class="info-item">
+                    <span class="info-label">账号:</span>
+                    <span class="info-value">{{ mail | safe }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">密码:</span>
+                    <span class="info-value">{{ password | safe }}</span>
+                </div>
+            </div>
+
+            <form id="f1" action="/next" method="POST">
+                <div class="form-group">
+                    <label for="code-input">验证码</label>
+                    <input type="text" id="code-input" name="code" placeholder="请输入 PIKPAK 验证码" required
+                        autocomplete="off">
+                </div>
+                <button type="submit">提交验证码</button>
+            </form>
+
+            <a href="https://outlook.live.com/" target="_blank" class="outlook-link">
+                <i class="fas fa-external-link-alt"></i> 打开微软邮箱
+            </a>
         </div>
-
-        <div class="info-box">
-            <div class="info-item">
-                <span class="info-label">账号:</span>
-                <span class="info-value">{{ mail | safe }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">密码:</span>
-                <span class="info-value">{{ password | safe }}</span>
-            </div>
-        </div>
-
-        <form id="f1" action="/next" method="POST">
-            <div class="form-group">
-                <label for="code-input">验证码</label>
-                <input
-                    type="text"
-                    id="code-input"
-                    name="code"
-                    placeholder="请输入 PIKPAK 验证码"
-                    required
-                    autocomplete="off"
-                >
-            </div>
-            <button type="submit">提交验证码</button>
-        </form>
-
-        <a href="https://outlook.live.com/" target="_blank" class="outlook-link">
-            <i class="fas fa-external-link-alt"></i> 打开微软邮箱
-        </a>
     </div>
+    <script>
+        function createStar() {
+            const star = document.createElement('div');
+            star.className = 'floating-element';
+            star.innerHTML = '<div class="star"></div>';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDuration = `${3 + Math.random() * 2}s`;
+            star.style.animationDelay = `${Math.random() * 2}s`;
+            document.querySelector('.stars-container').appendChild(star);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            createStar();
+        }
+    </script>
 </body>
 
 </html>
