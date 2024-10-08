@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,14 +8,15 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         body {
@@ -32,7 +34,12 @@
         }
 
         .container {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.2);
+            /* 更透明的背景 */
+            backdrop-filter: blur(10px);
+            /* 添加模糊效果 */
+            -webkit-backdrop-filter: blur(10px);
+            /* Safari 兼容 */
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -40,6 +47,37 @@
             width: 90%;
             margin: 20px;
             animation: fadeIn 1s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            /* 添加微妙的边框 */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 添加一个渐变效果以增强深度感 */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.3) 0%,
+                    rgba(255, 255, 255, 0.1) 100%);
+            z-index: -1;
+        }
+
+        /* 保持原有的淡入动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h1 {
@@ -111,55 +149,49 @@
             height: 300px;
         }
 
-        .floating-element {
-            position: absolute;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .star {
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid #FFD700;
-            position: absolute;
-        }
-
         @media (max-width: 480px) {
             .container {
                 padding: 30px;
             }
+
             h1 {
                 font-size: 2em;
             }
+
             p {
                 font-size: 1em;
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='public.css') }}">
 </head>
+
 <body>
-    <div class="container">
-        <h1>错误信息</h1>
-        <p>{{ error_message | safe }}</p>
-        <a href="/" class="btn">返回首页</a>
-    </div>
-    <div class="floating-element" style="top: 10%; left: 10%;">
-        <div class="star"></div>
-    </div>
-    <div class="floating-element" style="top: 20%; right: 15%;">
-        <div class="star"></div>
-    </div>
-    <div class="floating-element" style="bottom: 15%; left: 20%;">
-        <div class="star"></div>
+    <div class="background"></div>
+    <div class="stars-container"></div>
+    <div class="content">
+        <div class="container">
+            <h1>错误信息</h1>
+            <p>{{ error_message | safe }}</p>
+            <a href="/" class="btn">返回首页</a>
+        </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const stars = document.querySelectorAll('.star');
-            stars.forEach(star => {
-                star.style.animationDelay = `${Math.random() * 2}s`;
-            });
-        });
+        function createStar() {
+            const star = document.createElement('div');
+            star.className = 'floating-element';
+            star.innerHTML = '<div class="star"></div>';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDuration = `${3 + Math.random() * 2}s`;
+            star.style.animationDelay = `${Math.random() * 2}s`;
+            document.querySelector('.stars-container').appendChild(star);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            createStar();
+        }
     </script>
 </body>
+
 </html>

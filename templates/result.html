@@ -19,20 +19,6 @@
             }
         }
 
-        @keyframes float {
-            0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-
-            100% {
-                transform: translateY(0px);
-            }
-        }
-
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
@@ -163,20 +149,6 @@
             height: 300px;
         }
 
-        .floating-element {
-            position: absolute;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .star {
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid #FFD700;
-            position: absolute;
-        }
-
         @media (max-width: 480px) {
             .container {
                 padding: 30px;
@@ -191,30 +163,34 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='public.css') }}">
 </head>
 
 <body>
-    <div class="container">
-        <h1>邀请结果</h1>
-        <p>{{ result_message | safe }}</p>
-        <a href="/" class="btn">返回首页</a>
-    </div>
-    <div class="floating-element" style="top: 10%; left: 10%;">
-        <div class="star"></div>
-    </div>
-    <div class="floating-element" style="top: 20%; right: 15%;">
-        <div class="star"></div>
-    </div>
-    <div class="floating-element" style="bottom: 15%; left: 20%;">
-        <div class="star"></div>
+    <div class="background"></div>
+    <div class="stars-container"></div>
+    <div class="content">
+        <div class="container">
+            <h1>邀请结果</h1>
+            <p>{{ result_message | safe }}</p>
+            <a href="/" class="btn">返回首页</a>
+        </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const stars = document.querySelectorAll('.star');
-            stars.forEach(star => {
-                star.style.animationDelay = `${Math.random() * 2}s`;
-            });
-        });
+        function createStar() {
+            const star = document.createElement('div');
+            star.className = 'floating-element';
+            star.innerHTML = '<div class="star"></div>';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDuration = `${3 + Math.random() * 2}s`;
+            star.style.animationDelay = `${Math.random() * 2}s`;
+            document.querySelector('.stars-container').appendChild(star);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            createStar();
+        }
     </script>
 </body>
 
