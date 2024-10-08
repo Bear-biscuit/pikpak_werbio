@@ -41,6 +41,7 @@
             margin-top: 1.5rem;
             font-weight: 300;
             color: #007bff;
+            /* width: 15rem; */
         }
 
         /* Hamster wheel animation styles */
@@ -873,6 +874,17 @@
 <script>
     $(document).ready(function () {
         var processUrl = "{{ session.get('url') }}"; // 默认处理URL
+
+        // 定期更新状态消息
+        var statusMessages = [
+                "请稍等，后台正在处理中...",
+                "如遇到报错请重新提交...",
+            ];
+            var currentMessage = 0;
+            setInterval(function() {
+                currentMessage = (currentMessage + 1) % statusMessages.length;
+                $('.status').text(statusMessages[currentMessage]);
+            }, 3000);
 
         // 页面加载完成后发送AJAX请求
         $.ajax({
