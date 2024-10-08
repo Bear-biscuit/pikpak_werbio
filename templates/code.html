@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,17 +43,19 @@
 
         h1 {
             font-size: 32px;
-            color: #4a4a4a;
+            color: #4CAF50;
+            /* 深蓝色 */
             margin-bottom: 10px;
             letter-spacing: 1px;
         }
 
         .info-box {
-            background: #f8f8f8;
+            background: #f0f8f8;
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 30px;
-            border: 2px solid #6a4c93; /* 更深的紫色边框 */
+            border: 2px solid #4CAF50;
+            /* 绿色边框 */
         }
 
         .info-item {
@@ -68,8 +71,11 @@
         }
 
         .info-value {
-            color: #6a4c93; /* 更深的紫色文字 */
+            color: #4CAF50;
+            /* 绿色文字 */
             font-weight: 600;
+            flex: 1;
+            margin-left: 2px;
         }
 
         .form-group {
@@ -86,7 +92,8 @@
         input {
             width: 100%;
             padding: 12px 20px;
-            border: 2px solid #6a4c93; /* 更深的紫色边框 */
+            border: 2px solid #0056b3;
+            /* 深蓝色边框 */
             border-radius: 50px;
             font-size: 16px;
             transition: all 0.3s ease;
@@ -95,14 +102,16 @@
 
         input:focus {
             outline: none;
-            border-color: #8a2be2; /* 更鲜艳的紫色 */
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+            border-color: #007bff;
+            /* 亮蓝色 */
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
         }
 
         button {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(45deg, #6a4c93, #8a2be2); /* 深紫到亮紫的渐变 */
+            background: linear-gradient(45deg, #0056b3, #007bff);
+            /* 深绿色到亮绿色的渐变 */
             color: white;
             border: none;
             border-radius: 50px;
@@ -116,37 +125,49 @@
 
         button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(106, 76, 147, 0.3);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
         }
 
         .outlook-link {
             display: inline-block;
             margin-top: 20px;
-            color: #6a4c93; /* 更深的紫色链接 */
+            color: #0056b3;
+            /* 深蓝色链接 */
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
         }
 
         .outlook-link:hover {
-            color: #8a2be2; /* 鼠标悬停时更亮的紫色 */
+            color: #007bff;
+            /* 鼠标悬停时亮蓝色 */
             transform: translateY(-2px);
         }
 
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
 
         .floating-icon {
             font-size: 50px;
-            color: #6a4c93; /* 更深的紫色图标 */
+            color: #4CAF50;
+            /* 绿色图标 */
             margin-bottom: 20px;
             animation: float 3s ease-in-out infinite;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -157,7 +178,7 @@
             <p>请登录邮箱获取验证码</p>
             <p>(需在三分钟内完成输入)</p>
         </div>
-        
+
         <div class="info-box">
             <div class="info-item">
                 <span class="info-label">账号:</span>
@@ -172,8 +193,8 @@
         <form id="f1" action="/next" method="POST">
             <div class="form-group">
                 <label for="code-input">验证码</label>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="code-input"
                     name="code"
                     placeholder="请输入 PIKPAK 验证码"
@@ -183,10 +204,11 @@
             </div>
             <button type="submit">提交验证码</button>
         </form>
-        
+
         <a href="https://outlook.live.com/" target="_blank" class="outlook-link">
             <i class="fas fa-external-link-alt"></i> 打开微软邮箱
         </a>
     </div>
 </body>
+
 </html>
