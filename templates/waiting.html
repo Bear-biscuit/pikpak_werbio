@@ -805,12 +805,7 @@
             success: function (response) {
                 if (response.redirect) {
                     window.location.href = response.redirect;
-                } else {
-                    window.location.href = "{{ url_for('error') }}";
                 }
-            },
-            error: function () {
-                window.location.href = "{{ url_for('error') }}";
             }
         });
     });
