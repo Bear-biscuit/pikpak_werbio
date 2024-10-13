@@ -280,9 +280,17 @@
         <tr>
             {% set email_parts = email.split('----') %}
             <td>{{ email_parts[0] }}</td> <!-- 账号部分 -->
-            <td>{{ email_parts[1].split(' ')[0] if email_parts|length > 1 else '' }} <!-- 密码 -->
-                {{ email.split(' ')[1] if email.split(' ')|length > 1 else '' }}</td> <!-- 状态 -->
-            <td data-timestamp="{{ email.split(' ')[-1] }}">{{ email.split(' ')[-1] }}</td> <!-- 时间戳 -->
+            <td>
+                {% if email_parts[1] %}
+                    {% set password_status = email_parts[1].split(' ') %}
+                    {{ password_status[0] if password_status|length > 0 else '' }} <!-- 密码 -->
+                    {{ password_status[1] if password_status|length > 1 else '' }} <!-- 状态 -->
+                {% else %}
+                {% endif %}
+            </td> <!-- 密码和状态 -->
+            <td data-timestamp="{{ email_parts[1].split(' ')[-1] if email_parts[1] and email_parts[1].split(' ')|length > 2 else '' }}">
+                {{ email_parts[1].split(' ')[-1] if email_parts[1] and email_parts[1].split(' ')|length > 2 else '' }}
+            </td> <!-- 时间戳 -->
             <td>
                 <form action="{{ url_for('update_email', index=loop.index0) }}" method="post">
                     <input type="text" name="new_email" placeholder="New Email" value="{{ email_parts[0] }}" required>
