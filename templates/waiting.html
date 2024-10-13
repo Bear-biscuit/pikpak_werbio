@@ -801,12 +801,11 @@
         $.ajax({
             url: processUrl,
             type: 'POST',
+            timeout: 180000, 
             success: function (response) {
                 if (response.redirect) {
-                    // 成功后重定向到结果页面
                     window.location.href = response.redirect;
                 } else {
-                    // 出错时重定向到错误页面
                     window.location.href = "{{ url_for('error') }}";
                 }
             },
