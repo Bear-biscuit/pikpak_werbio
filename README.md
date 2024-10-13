@@ -7,6 +7,25 @@
 ## 原作者：B站纸鸢的花语
 倒卖 牡蛎😘~~~
 
+## 自动获取验证码版本注意事项  
+目前自动获取验证码版本已经复活  
+感谢纸鸢大佬的[提取验证码](https://github.com/kiteyuan/Pikpak-Verification-Code)项目  
+自动获取验证码需要提供以下信息  
+```
+email
+refresh_token
+client_id
+```
+示例  
+```
+闪邮箱提供的邮箱信息(此为举例参考):
+
+[email] f73e6XXXlt1g@hotmail.com
+[password] GDrQ2BSb8
+[refresh_token] M.C523_BAY.0.U.-CgeAVXXbUEcbmFRjAS4UURT!ZNo0zq0Co!OvgroOByjwBHW8t3KloX6rdDAp2Ugpy4qIz84Xa2oyIPDUwvuEdb7xSYBPna74RRIGnOp5yp6D5Rb*GgdBEDxEZdEkCOdbwsC9JMLg6FlVnwgY6ubWIYKvULJmKOGKs*YXXXXXXXXXXXXXXXXX6QjBjjMY2ezziJDfga4TI*z9AMDW3*DSvSpGAkKtHG8bdFO4B7NItxLlMHiAEaVaOxSeqQuKAZVxy7N8kzKMcVNxTcjX1sbjfAZIznfKZXU*rQ4z64lTc6vMq*7hf774q3yFXQj2OMJoNXr6KUr9WcG!vrKHp1F5lVX!6defcYA8SgtXtMCFtrh3JrNsJJAAnUXNbXOgnGmwvdnZ5jxnYxegjVIn6!yv*tw$
+[client_id] 8b4ba9dd-3ea5-4e5f-86f1-ddba2230dcf2
+```
+目前程序中已接入闪邮箱，可自行购买邮箱卡进行提取  
 
 [预览](https://pik.bocchi2b.top)
 
