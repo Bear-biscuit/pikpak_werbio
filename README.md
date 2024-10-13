@@ -13,7 +13,6 @@
 自动获取验证码需要提供以下信息  
 ```
 email
-password
 refresh_token
 client_id
 ```
