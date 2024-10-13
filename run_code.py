@@ -810,15 +810,19 @@ def init(xid, mail):
             response = requests.post(
                 url, json=body, headers=headers,proxies=get_proxy(), timeout=10)
             print('初始安全验证')
-            print(response.text)
+            # print(response.text)
             return json.loads(response.text)
         except:
             retries += 1
     return '连接超时'
 # 谷歌验证
 def recaptcha(url, key):
+    from loguru import logger  # 如果 yescaptcha 使用 loguru
     from yescaptcha.task import NoCaptchaTaskProxyless
     from yescaptcha.client import Client
+    print('处理谷歌验证中……')
+    # 移除所有默认的日志处理器
+    logger.remove()
 
     # yescaptcha Key
     CLIENT_KEY = key
@@ -892,9 +896,9 @@ def report(xid, captcha_token, google_token, request_id, sign,rtc_token):
     while retries < max_retries:
         try:
             response2 =  requests.request("GET", url, params=querystring,timeout=5)
-            print(response2)
+            # print(response2)
             response_data = response2.json()
-            print(response_data)
+            # print(response_data)
             return response_data
         except:
             retries += 1
@@ -1607,7 +1611,7 @@ def main(incode, card_key, rtc_token, key):
             if 'error' in Verification.keys():
                 update_file_status(file_path, email_user,reset=True)
                 return {'error':'安全验证失败'}
-            print(password)
+            # print(password)
             return {
                 'xid': xid,
                 'Verification': Verification,
@@ -1637,7 +1641,7 @@ def main2(incode,email_user, email_pass, rtc_token, key):
         mail = email_user
         password = email_pass
         # 执行初始化安全验证
-        print(mail)
+        # print(mail)
         Init = init(xid, mail)
         if (Init == '连接超时'):
             return {'error': "连接超时,请返回重试，多次失败请联系管理员查看代理池"}
@@ -1687,7 +1691,7 @@ def main3(xid,Verification,code,mail,start_time,incode,invitation_records,config
             update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
             return {'error': "验证码不正确"}
         signup_response = signup(xid, mail, code, verification_response['verification_token'])
-        print(signup_response)
+        # print(signup_response)
         if (signup_response.get('error') == 'already_exists'):
             current_timestamp = time.time()
             update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
@@ -1732,7 +1736,7 @@ def main4(xid,Verification,code,mail,start_time,incode):
         if(verification_response == '验证码不正确'):
             return {'error': "验证码不正确"}
         signup_response = signup(xid, mail, code, verification_response['verification_token'])
-        print(signup_response)
+        # print(signup_response)
         if (signup_response.get('error') == 'already_exists'):
             return {'error':'该邮箱已被使用，请更换邮箱'}
 

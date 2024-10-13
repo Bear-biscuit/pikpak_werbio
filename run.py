@@ -1008,10 +1008,13 @@ def init(xid, mail):
         except:
             retries += 1
     return '连接超时'
-# 谷歌验证
 def recaptcha(url, key):
+    from loguru import logger  # 如果 yescaptcha 使用 loguru
     from yescaptcha.task import NoCaptchaTaskProxyless
     from yescaptcha.client import Client
+    print('处理谷歌验证中……')
+    # 移除所有默认的日志处理器
+    logger.remove()
 
     # yescaptcha Key
     CLIENT_KEY = key
@@ -1029,6 +1032,8 @@ def recaptcha(url, key):
     except Exception as e:
         print("发生异常:", str(e))
         return None
+
+
 
 
 
@@ -1085,9 +1090,9 @@ def report(xid, captcha_token, google_token, request_id, sign,rtc_token):
     while retries < max_retries:
         try:
             response2 =  requests.request("GET", url, params=querystring,timeout=5)
-            print(response2)
+            # print(response2)
             response_data = response2.json()
-            print(response_data)
+            # print(response_data)
             return response_data
         except:
             retries += 1
@@ -1788,7 +1793,7 @@ def main(incode, card_key, rtc_token, key):
                 request_id = signGet['data']['request_id']
                 rtc_token = signGet['data']['rtc_token']
                 captoken = captcha_token
-                print(request_id,sign)
+                # print(request_id,sign)
                 captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)
                 if (captcha_token['error'] == 'invalid_argument'):
                     update_file_status(file_path, email_user,reset=True)
@@ -1803,7 +1808,7 @@ def main(incode, card_key, rtc_token, key):
             # 获取验证码
             verification_senders = ['noreply@accounts.mypikpak.com']
             # 使用 refresh_token 获取 access_token
-            print(client_id,refresh_token)
+            # print(client_id,refresh_token)
             acc_token = get_access_token(client_id, refresh_token)
 
             # 连接到 POP3 服务器并获取验证码邮件
@@ -1818,7 +1823,7 @@ def main(incode, card_key, rtc_token, key):
                 return {'error': f'获取验证码出错{result["msg"]}'}
             else :
                 code = result["verification_code"]
-                print(code)
+                # print(code)
             # 使用验证码完成其他操作
             verification_response = verify(xid, Verification['verification_id'], code)
             if(verification_response == '验证码不正确'):
@@ -1827,7 +1832,7 @@ def main(incode, card_key, rtc_token, key):
                 update_file_status(file_path, email_user, status = "失败", time = current_timestamp)
                 return {'error': "验证码不正确"}
             signup_response = signup(xid, mail, code, verification_response['verification_token'])
-            print(signup_response)
+            # print(signup_response)
             if (signup_response.get('error') == 'already_exists'):
                 current_timestamp = time.time()
                 update_file_status(file_path, email_user, status = "失败", time = current_timestamp)
@@ -1928,7 +1933,7 @@ def main2(incode,email_user, email_pass,refresh_token, client_id, rtc_token, key
         if(verification_response == '验证码不正确'):
             return {'error': "验证码不正确"}
         signup_response = signup(xid, mail, code, verification_response['verification_token'])
-        print(signup_response)
+        # print(signup_response)
         if (signup_response.get('error') == 'already_exists'):
             return {'error':'该邮箱已被使用，请更换邮箱'}
 
@@ -2061,6 +2066,7 @@ def process():
     # 调用主逻辑，获取结果
     result = main(incode, card_key, rtc_token, key)
     # 返回处理结果，重定向到相应页面
+    print(result)
     if 'error' in result:
         return jsonify({'redirect': url_for('error', error_message=result['error'])})
     return jsonify({'redirect': url_for('result', result_message=result['message'])})
