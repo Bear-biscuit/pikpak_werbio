@@ -126,7 +126,7 @@
                             <label for="email-user">请输入邮箱账号:</label>
 
                             <input type="text" id="email-user" aria-describedby="email-user_action_btn"
-                                list="email-user-list" class="form-control" name="email-user" placeholder="仅支持正式邮箱"
+                                list="email-user-list" class="form-control" name="email-user" placeholder="仅支持开启pop3的邮箱"
                                 required="required">
                             <datalist id="email-user-list">
 
@@ -141,7 +141,7 @@
 
                             <input type="text" id="email-password" aria-describedby="email-password_action_btn"
                                 list="email-password-list" class="form-control" name="email-password"
-                                placeholder="请输入邮箱密码" required="required">
+                                placeholder="请输入邮箱密码/授权码" required="required">
                             <datalist id="email-password-list">
 
                             </datalist>
@@ -149,6 +149,34 @@
                             <div class="valid-feedback"></div>
 
                             <small id="email-password_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="refresh_token">请输入refresh_token:</label>
+
+                            <input type="text" id="refresh_token" aria-describedby="email-password_action_btn"
+                                list="refresh_token-list" class="form-control" name="refresh_token"
+                                placeholder="请输入refresh_token" required="required">
+                            <datalist id="refresh_token-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="refresh_token_help" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="client_id">请输入client_id:</label>
+
+                            <input type="text" id="client_id" aria-describedby="email-password_action_btn"
+                                list="client_id-list" class="form-control" name="client_id"
+                                placeholder="请输入client_id" required="required">
+                            <datalist id="client_id-list">
+
+                            </datalist>
+                            <div class="invalid-feedback"></div>
+                            <div class="valid-feedback"></div>
+
+                            <small id="client_id_help" class="form-text text-muted"></small>
                         </div>
                         <div class="form-group">
                             <label for="key-646173">打码平台密钥(<a
@@ -215,6 +243,8 @@
             { id: 'key-646173', storageKey: 'key' },
             { id: 'email-user', storageKey: 'user' },
             { id: 'email-password', storageKey: 'password' },
+            { id: 'refresh_token', storageKey: 'refresh_token' },
+            { id: 'client_id', storageKey: 'client_id' },
             { id: 'incode-9989', storageKey: 'code' }
         ];
 

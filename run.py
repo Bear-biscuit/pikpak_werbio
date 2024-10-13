@@ -11,12 +11,13 @@ import random
 import re
 import logging
 import time
-import requests
 import uuid
 import email
 import threading
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timedelta
+import base64
+from email import message_from_bytes
 
 app = Flask(__name__)
 # 创建一个自定义日志过滤器
@@ -39,7 +40,7 @@ log.addFilter(RequestFilter())
 
 # -------------改这里-------------
 # r'替换为自己txt文件所在地址'
-file_path = r'./email.txt'
+file_path = r'./email_auto.txt'
 
 # 卡密文件路径
 card_keys_file = r'./config/card_keys.json'
@@ -202,7 +203,7 @@ def index():
         })
         initialized = True
     emails = read_emails()
-    return render_template('index.html', emails=emails)
+    return render_template('index_auto.html', emails=emails)
 
 # 公告编辑页面
 @app.route('/edit_announcement', methods=['GET', 'POST'])
@@ -368,9 +369,9 @@ def bulk_add():
                 flash('请上传有效的文本文件。', 'danger')
 
         # 再次渲染页面时传递 bulk_input 变量
-        return render_template('bulk_add.html', non_logged_in_count=non_logged_in_count, email_counts=email_counts, balance_info=balance_info, bulk_input=bulk_input)
+        return render_template('bulk_add_auto.html', non_logged_in_count=non_logged_in_count, email_counts=email_counts, balance_info=balance_info, bulk_input=bulk_input)
 
-    return render_template('bulk_add.html', non_logged_in_count=non_logged_in_count, email_counts=email_counts, balance_info=balance_info, bulk_input=bulk_input)
+    return render_template('bulk_add_auto.html', non_logged_in_count=non_logged_in_count, email_counts=email_counts, balance_info=balance_info, bulk_input=bulk_input)
 
 # 获取 email 数量数据
 def get_email_counts():
@@ -461,50 +462,241 @@ def update_email(index):
 # 以下为会员邀请部分
 def read_and_process_file(file_path):
     try:
+        # 初始化四个列表
         email_user_list = []
         email_pass_list = []
+        refresh_token_list = []
+        client_id_list = []
+        
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
+        
         updated_lines = []
         for line in lines:
             line = line.strip()
-            if "使用中" in line or "登录成功(待定)" in line or "失败" in line:
+            # 跳过包含特定关键字的行
+            if any(keyword in line for keyword in ["使用中", "登录成功(待定)", "失败"]):
                 continue
-            match = re.match(r'^(.+?)----([^\s@]+)$', line)
+            
+            # 更新正则表达式以匹配四个部分
+            match = re.match(r'^(.+?)----(.+?)----(.+?)----([^\s@]+)$', line)
             if match:
-                email, password = match.groups()
+                email, password, refresh_token, client_id = match.groups()
                 email_user_list.append(email)
                 email_pass_list.append(password)
+                refresh_token_list.append(refresh_token)
+                client_id_list.append(client_id)
             else:
                 print(f"无法匹配行: {line}")
                 updated_lines.append(line)
-
-        return email_user_list, email_pass_list
+        
+        
+        return email_user_list, email_pass_list, refresh_token_list, client_id_list
     except Exception as e:
         print("读取文件失败:", e)
-        return None, None
+        return None, None, None, None
 
 # 更新文件
 def update_file_status(file_path, email, status=None, time=None, reset=False):
     try:
+        if not os.path.exists(file_path):
+            logging.error(f"文件不存在: {file_path}")
+            return
+
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
-        with open(file_path, 'w', encoding='utf-8') as file:
-            for line in lines:
-                if line.strip().startswith(email) and "----" in line:
-                    if reset:
-                        # 恢复到初始状态
-                        file.write(line.split(" ")[0].strip() + "\n")
-                    else:
-                        # 直接写入状态和时间戳
-                        file.write(f"{line.split(' ')[0].strip()} {status} {time}\n")
+
+        updated_lines = []
+        found = False
+
+        for line in lines:
+            stripped_line = line.strip()
+            if stripped_line.startswith(email) and "----" in stripped_line:
+                found = True
+                parts = stripped_line.split("----")
+
+                if len(parts) < 4:
+                    logging.warning(f"行格式不正确，跳过: {line}")
+                    updated_lines.append(line)
+                    continue
+
+                # 处理 password 部分，可能包含状态和时间
+                password_part = parts[1]
+                password_parts = password_part.split(' ', 2)  # 分割成最多3部分
+
+                password = password_parts[0]
+
+                if reset:
+                    # 仅保留密码，不保留状态和时间
+                    new_password_part = password
+                    logging.info(f"重置电子邮件: {email}")
                 else:
-                    file.write(line)
+                    # 添加或更新状态和时间
+                    if len(password_parts) == 3:
+                        # 已有状态和时间，更新它们
+                        new_password_part = f"{password} {status} {time}"
+                        logging.info(f"更新电子邮件 '{email}' 的状态和时间。")
+                    else:
+                        # 添加状态和时间
+                        new_password_part = f"{password} {status} {time}"
+                        logging.info(f"添加状态和时间到电子邮件: {email}")
+
+                # 更新 parts[1] 部分
+                parts[1] = new_password_part
+
+                # 重新构建行
+                updated_line = "----".join(parts) + "\n"
+                updated_lines.append(updated_line)
+            else:
+                updated_lines.append(line)
+
+        if not found:
+            logging.warning(f"未找到指定的电子邮件: {email}")
+            return
+
+        # 写回更新后的内容
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.writelines(updated_lines)
+        logging.info(f"成功更新文件: {file_path}")
+
     except Exception as e:
-        print("更新文件状态失败:", e)
+        logging.error(f"更新文件状态失败: {e}")
 
 
+# 邮箱逻辑（纸鸢提供）  
+# 使用 refresh_token 获取 access_token
+def get_access_token(client_id, refresh_token):
+    """
+    通过 refresh_token 获取 OAuth2 的 access_token
 
+    参数:
+    client_id (str): 应用的客户端 ID
+    refresh_token (str): 刷新的 token，用于获取新的 access_token
+
+    返回:
+    str: 从返回的 JSON 中提取的 access_token
+    """
+    data = {
+        'client_id': client_id,
+        'grant_type': 'refresh_token',  # 使用 refresh_token 来获取新的 token
+        'refresh_token': refresh_token
+    }
+    response = requests.post('https://login.live.com/oauth20_token.srf', data=data)
+    return response.json().get('access_token')
+
+
+# 使用 access_token 生成 OAuth2 认证字符串
+def generate_auth_string(user, token):
+    """
+    生成基于 OAuth2 的 POP3 身份验证字符串
+
+    参数:
+    user (str): 用户邮箱地址
+    token (str): 使用 access_token 进行 OAuth2 验证
+
+    返回:
+    str: POP3 身份验证字符串
+    """
+    auth_string = f"user={user}\1auth=Bearer {token}\1\1"
+    return auth_string
+
+
+# POP3 服务器配置
+POP3_SERVER = 'outlook.office365.com'
+POP3_PORT = 995  # POP3 SSL 端口
+
+
+def connect_pop3(email, access_token, verification_senders, max_retries=5, delay_seconds=5):
+    """
+    连接到 POP3 服务器并提取最新的验证码邮件
+
+    参数:
+    email (str): 用户邮箱地址
+    access_token (str): 使用 OAuth2 的 access_token
+    verification_senders (list): 验证邮件的可能发件人列表
+    max_retries (int): 最大重试次数
+    delay_seconds (int): 每次重试之间的延迟（秒）
+
+    返回:
+    dict: 包含验证码、时间戳、状态信息的字典
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            print(f"尝试连接 POP3 服务器，尝试次数: {attempt}/{max_retries}")
+            
+            # 使用 SSL 连接到 POP3 服务器
+            server = poplib.POP3_SSL(POP3_SERVER, POP3_PORT)
+
+            # 生成并发送 OAuth2 身份验证字符串
+            auth_string = generate_auth_string(email, access_token)
+            encoded_auth_string = base64.b64encode(auth_string.encode("utf-8")).decode("utf-8")
+            server._shortcmd('AUTH XOAUTH2')  # 发起 XOAUTH2 认证
+            server._shortcmd(f'{encoded_auth_string}')  # 发送 Base64 编码的认证字符串
+
+            # 获取邮件数量
+            num_messages = len(server.list()[1])
+            print(f"邮件总数: {num_messages}")
+
+            verification_code = None
+            timestamp = None
+
+            # 从最新的邮件开始逐一检查
+            for i in range(num_messages, 0, -1):
+                response, lines, octets = server.retr(i)  # 获取邮件
+                msg_content = b"\n".join(lines)  # 将邮件内容连接为字节流
+                msg = message_from_bytes(msg_content)  # 解析邮件
+
+                # 检查发件人是否在验证发件人列表中
+                from_email = msg['From']
+                if any(sender in from_email for sender in verification_senders):
+                    print(f"找到来自验证发件人的邮件: {from_email}")
+                    timestamp = msg['Date']  # 提取时间戳
+
+                    # 处理邮件正文，获取 HTML 内容
+                    body = ""
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            if part.get_content_type() == 'text/html':
+                                body = part.get_payload(decode=True).decode('utf-8')
+                                break
+                    else:
+                        body = msg.get_payload(decode=True).decode('utf-8')
+
+                    # 使用正则表达式提取 6 位验证码
+                    match = re.search(r'<h2>(\d{6})<\/h2>', body)
+                    if match:
+                        verification_code = match.group(1)
+                        print(f"找到验证码: {verification_code}")
+                        break  # 找到验证码后退出循环
+
+            server.quit()  # 关闭连接
+
+            # 如果找到验证码，返回详细信息
+            if verification_code:
+                return {
+                    "code": 200,
+                    "verification_code": verification_code,
+                    "time": timestamp,
+                    "msg": "Verification code retrieved successfully"
+                }
+            else:
+                print(f"尝试 {attempt} 未找到验证码。")
+                if attempt < max_retries:
+                    print(f"等待 {delay_seconds} 秒后重试...")
+                    time.sleep(delay_seconds)
+                else:
+                    return {"code": 0, "msg": "Verification code not found"}
+
+        except Exception as e:
+            print(f"尝试 {attempt} 发生错误: {e}")
+            if attempt < max_retries:
+                print(f"等待 {delay_seconds} 秒后重试...")
+                time.sleep(delay_seconds)
+            else:
+                return {"code": 500, "msg": f"Error: {str(e)}"}
+
+    # 如果所有重试都失败，返回失败代码
+    return {"code": 0, "msg": "Verification code not found after retries"}
 # 纸鸢邮件api
 def get_verification_code(email, password, retries=1, max_retries=6):
     url = "https://paperkiteidleplus.top/document/pikpak_invite/pop3.php"
@@ -1567,13 +1759,13 @@ def main(incode, card_key, rtc_token, key):
                 return {'error': "今天已经提交过了，请在次日9点后再试。"}
     try:
         xid = str(uuid.uuid4()).replace("-", "")
-        email_users, email_passes = read_and_process_file(file_path)
+        email_users, email_passes, refresh_tokens, client_ids = read_and_process_file(file_path)
 
-        if not email_users or not email_passes:
+        if not email_users or not email_passes or not refresh_tokens or not client_ids:
             return {'error': "暂无可用邮箱"}
-        for email_user, email_pass in zip(email_users, email_passes):
+        for email_user, email_pass, refresh_token, client_id in zip(email_users, email_passes, refresh_tokens, client_ids):
             mail = email_user
-            update_file_status(r'./email.txt', email_user, status = "使用中", time = '')
+            update_file_status(file_path, email_user, status = "使用中", time = '')
             # 执行初始化安全验证
             Init = init(xid, mail)
             if (Init == '连接超时'):
@@ -1596,6 +1788,7 @@ def main(incode, card_key, rtc_token, key):
                 request_id = signGet['data']['request_id']
                 rtc_token = signGet['data']['rtc_token']
                 captoken = captcha_token
+                print(request_id,sign)
                 captcha_token = report(xid, captoken, google_token['gRecaptchaResponse'],request_id,sign,rtc_token)
                 if (captcha_token['error'] == 'invalid_argument'):
                     update_file_status(file_path, email_user,reset=True)
@@ -1608,27 +1801,36 @@ def main(incode, card_key, rtc_token, key):
                 update_file_status(file_path, email_user,reset=True)
                 return {'error':'安全验证失败'}
             # 获取验证码
-            code = get_verification_code(email_user, email_pass)
+            verification_senders = ['noreply@accounts.mypikpak.com']
+            # 使用 refresh_token 获取 access_token
+            print(client_id,refresh_token)
+            acc_token = get_access_token(client_id, refresh_token)
 
-            if (code == '超时'):
+            # 连接到 POP3 服务器并获取验证码邮件
+            result = connect_pop3(email_user, acc_token, verification_senders)
+            
+
+            if (result['code'] == 0 or result['code'] == 500):
                 print(f"无法从邮箱获取验证码: {mail}")
                 # 获取当前时间
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
-                return {'error': "邮箱登录/验证失败，请返回重试"}
-
+                update_file_status(file_path, email_user, status = "失败", time = current_timestamp)
+                return {'error': f'获取验证码出错{result["msg"]}'}
+            else :
+                code = result["verification_code"]
+                print(code)
             # 使用验证码完成其他操作
             verification_response = verify(xid, Verification['verification_id'], code)
             if(verification_response == '验证码不正确'):
                 # 获取当前时间
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
+                update_file_status(file_path, email_user, status = "失败", time = current_timestamp)
                 return {'error': "验证码不正确"}
             signup_response = signup(xid, mail, code, verification_response['verification_token'])
             print(signup_response)
             if (signup_response.get('error') == 'already_exists'):
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
+                update_file_status(file_path, email_user, status = "失败", time = current_timestamp)
                 return {'error':'该邮箱已被使用'}
 
             current_time = str(int(time.time()))
@@ -1649,7 +1851,7 @@ def main(incode, card_key, rtc_token, key):
                 # 获取当前时间
                 current_timestamp = time.time()
                 # 更新文件中的邮箱和密码状态 添加时间
-                update_file_status(r'./email.txt', email_user, status = "登录成功(待定)", time = current_timestamp)
+                update_file_status(file_path, email_user, status = "登录成功(待定)", time = current_timestamp)
                 # 更新卡密使用次数
                 card_keys[card_key] -= 1
                 save_card_keys(card_keys)  # 保存更新后的卡密信息
@@ -1658,12 +1860,12 @@ def main(incode, card_key, rtc_token, key):
                 print(f"未知情况: {activation}")
                 # 获取当前时间
                 current_timestamp = time.time()
-                update_file_status(r'./email.txt', email_user, status = "失败", time = current_timestamp)
+                update_file_status(file_path, email_user, status = "失败", time = current_timestamp)
                 return {'error': f"未知情况{activation}"}
     except Exception as e:
         update_file_status(file_path, email_user,reset=True)
         return {'error': f"运行出错，请稍后重试<br>错误信息：{str(e)}"}
-def main2(incode,email_user, email_pass, rtc_token, key):
+def main2(incode,email_user, email_pass,refresh_token, client_id, rtc_token, key):
     with open(manual_file, 'r') as f:
         data = json.load(f)
     manual_state = data.get('manual_enabled')  
@@ -1702,12 +1904,24 @@ def main2(incode,email_user, email_pass, rtc_token, key):
         if 'error' in Verification.keys():
             return {'error':'安全验证失败'}
         # 获取验证码
-        code = get_verification_code(email_user, email_pass)
+        verification_senders = ['noreply@accounts.mypikpak.com']
+        # 使用 refresh_token 获取 access_token
+        print(client_id,refresh_token)
+        acc_token = get_access_token(client_id, refresh_token)
 
-        if (code == '超时'):
+        # 连接到 POP3 服务器并获取验证码邮件
+        result = connect_pop3(email_user, acc_token, verification_senders)
+        
+
+        if (result['code'] == 0 or result['code'] == 500):
             print(f"无法从邮箱获取验证码: {mail}")
             # 获取当前时间
-            return {'error': "邮箱登录/验证失败，请更换邮箱"}
+            current_timestamp = time.time()
+            update_file_status(file_path, email_user, status = "失败", time = current_timestamp)
+            return {'error': f'获取验证码出错{result["msg"]}'}
+        else :
+            code = result["verification_code"]
+            print(code)
 
         # 使用验证码完成其他操作
         verification_response = verify(xid, Verification['verification_id'], code)
@@ -1796,7 +2010,7 @@ def vip():
 
     # 渲染网页模板，传递公告状态和内容
     return render_template(
-        'vip.html',
+        'vip_auto.html',
         is_enabled=is_enabled,
         announcement_title=announcement_title,
         announcement_message=announcement_message,
@@ -1821,11 +2035,15 @@ def submit1():
     incode = request.form.get('incode')
     email_user = request.form.get('email-user')
     email_password = request.form.get('email-password')
+    refresh_token = request.form.get('refresh_token')
+    client_id = request.form.get('client_id')
     rtc_token = request.form.get('rtc_token')
     key = request.form.get('key')
     session['incode'] = incode
     session['email-user'] = email_user
     session['email-password'] = email_password
+    session['refresh_token'] = refresh_token
+    session['client_id'] = client_id
     session['rtc_token'] = rtc_token
     session['key'] = key
     session['url'] = url_for('process1')
@@ -1853,9 +2071,11 @@ def process1():
     email_password = session.get('email-password')
     rtc_token = session.get('rtc_token')
     key = session.get('key')
+    refresh_token = session.get('refresh_token')
+    client_id = session.get('client_id')
     # 调用主逻辑，获取结果
     # print(incode, email_user,email_password, rtc_token, key)
-    result = main2(incode, email_user,email_password, rtc_token, key)
+    result = main2(incode, email_user,email_password,refresh_token,client_id, rtc_token, key)
     # 返回处理结果，重定向到相应页面
     if 'error' in result:
         return jsonify({'redirect': url_for('error', error_message=result['error'])})
