@@ -7,6 +7,15 @@
 ## 原作者：B站纸鸢的花语
 倒卖 牡蛎😘~~~
 
+### 注意
+如果账户中有奖励不适用的记录，请更换账户进行邀请，可以使用临时邮箱来注册  
+注册时使用浏览器开启无痕模式  
+到pikpak的[网页端](https://pikpak.me)中进行注册  
+邀请结束后，请使用浏览器的无痕模式去登录程序返回的被邀请的账号  
+更改账号的用户名、随便保存一点东西  
+我也不知道是那一步生效了😭，但是这样会员奖励是可以正常到账的  
+
+
 ## 自动获取验证码版本注意事项  
 目前自动获取验证码版本已经复活  
 感谢纸鸢大佬的[提取验证码](https://github.com/kiteyuan/Pikpak-Verification-Code)项目  
@@ -29,9 +38,6 @@ client_id
 
 [预览](https://pik.bocchi2b.top)
 
-### 注意
-现在邀请新用户后，会有最高24小时的审核期，会员奖励不会立即结算  
-![image](https://github.com/user-attachments/assets/29f795d0-bc14-48a7-884b-293c2701a613)
 
 ### 会员邀请主程序
 ![image](https://github.com/user-attachments/assets/d2d6704b-03af-46cb-9ad4-68ecf4c8b282)  
