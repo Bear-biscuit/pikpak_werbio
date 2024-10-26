@@ -1719,7 +1719,7 @@ def main3(xid,Verification,code,mail,start_time,incode,invitation_records,config
             # 更新卡密使用次数
             card_keys[card_key] -= 1
             save_card_keys(card_keys)  # 保存更新后的卡密信息
-            return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
+            return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b<br>请使用浏览器的无痕模式打开pikpak.me<br>使用上面返回的邮箱和密码去登录<br>然后修改一下用户名，使用一次云下载<br>复制这个链接去云下载即可https://youtu.be/Qx6ezJSBVZ8?si=rNYo9HBuHmuCMkE_"}
         else:
             print(f"未知情况: {activation}")
             # 获取当前时间
@@ -1751,7 +1751,7 @@ def main4(xid,Verification,code,mail,start_time,incode):
         run_time = f'{(end_time - start_time):.2f}'
         if activation.get('add_days') == 0:
             print(f'邀请成功(待定): {incode} 请重新打开邀请页面，查看邀请记录是否显示‘待定’')
-            return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b"}
+            return {'message': f"邀请成功(待定): {incode} 运行时间: {run_time}秒<br>请重新打开邀请页面，查看邀请记录是否显示‘待定’<br>邮箱：{mail}<br>密码：Bocchi002b<br>请使用浏览器的无痕模式打开pikpak.me<br>使用上面返回的邮箱和密码去登录<br>然后修改一下用户名，使用一次云下载<br>复制这个链接去云下载即可https://youtu.be/Qx6ezJSBVZ8?si=rNYo9HBuHmuCMkE_"}
         else:
             print(f"未知情况: {activation}")
             return {'error': f"未知情况{activation}"}
