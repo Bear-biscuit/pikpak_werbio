@@ -1048,6 +1048,7 @@ def getSign(captchaCode, rtc_token):
     }
     body = {
         "captchaCode": captchaCode,
+        "vCode": "XXXXXXXXXXX",
         "rtcToken": rtc_token
     }
     retries = 0
