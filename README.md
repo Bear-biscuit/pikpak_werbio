@@ -3,6 +3,8 @@
 
 ## pikpak会员自动邀请程序
 感谢AAA大佬提供的[参数接口](https://doc.apipost.net/docs/detail/314e89ad4864000?target_id=34e75066b2f002)  
+请自行联系作者获取，接口授权码
+更改代码中获取sign函数中的授权码```vcode```
 
 ## 原作者：B站纸鸢的花语
 倒卖 牡蛎😘~~~
